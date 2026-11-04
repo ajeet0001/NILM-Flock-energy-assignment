@@ -1,0 +1,67 @@
+[
+  {
+    "Experiment": "Intra-House (House 1)",
+    "Model": "Always-Off Baseline",
+    "MAE_Watts": 13.02,
+    "RMSE_Watts": 154.64,
+    "NMAE": 1.0,
+    "Precision": 0.0,
+    "Recall": 0.0,
+    "F1_Score": 0.0,
+    "Energy_True_kWh": 43.75,
+    "Energy_Pred_kWh": 0.0,
+    "Energy_Error_Pct": 100.0
+  },
+  {
+    "Experiment": "Intra-House (House 1)",
+    "Model": "Heuristic Threshold (1.8kW)",
+    "MAE_Watts": 17.04,
+    "RMSE_Watts": 147.94,
+    "NMAE": 1.3092,
+    "Precision": 0.1378,
+    "Recall": 0.293,
+    "F1_Score": 0.1874,
+    "Energy_True_kWh": 43.75,
+    "Energy_Pred_kWh": 18.39,
+    "Energy_Error_Pct": 57.97
+  },
+  {
+    "Experiment": "Intra-House (House 1)",
+    "Model": "HistGradientBoosting",
+    "MAE_Watts": 12.52,
+    "RMSE_Watts": 106.87,
+    "NMAE": 0.9622,
+    "Precision": 0.2803,
+    "Recall": 0.855,
+    "F1_Score": 0.4222,
+    "Energy_True_kWh": 43.75,
+    "Energy_Pred_kWh": 38.26,
+    "Energy_Error_Pct": 12.55
+  },
+  {
+    "Experiment": "Cross-House (H2+3 -> H1)",
+    "Model": "Always-Off Baseline",
+    "MAE_Watts": 10.9,
+    "RMSE_Watts": 138.09,
+    "NMAE": 1.0,
+    "Precision": 0.0,
+    "Recall": 0.0,
+    "F1_Score": 0.0,
+    "Energy_True_kWh": 146.51,
+    "Energy_Pred_kWh": 0.0,
+    "Energy_Error_Pct": 100.0
+  },
+  {
+    "Experiment": "Cross-House (H2+3 -> H1)",
+    "Model": "HistGradientBoosting",
+    "MAE_Watts": 17.35,
+    "RMSE_Watts": 122.86,
+    "NMAE": 1.5919,
+    "Precision": 0.1619,
+    "Recall": 0.7637,
+    "F1_Score": 0.2671,
+    "Energy_True_kWh": 146.51,
+    "Energy_Pred_kWh": 142.8,
+    "Energy_Error_Pct": 2.53
+  }
+]

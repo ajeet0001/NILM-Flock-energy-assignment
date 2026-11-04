@@ -1,0 +1,39 @@
+# Configuration for REFIT House 1 Data Cleaning Pipeline
+# Flock Energy NILM Appliance Disaggregation Project
+
+project_name: "REFIT House 1 Data Cleaning"
+house_id: 1
+
+paths:
+  raw_dir: "data/raw"
+  raw_part1_file: "data/raw/RAW_House1_Part1.csv"
+  raw_part2_file: "data/raw/RAW_House1_Part2.csv"
+  raw_readme_file: "data/raw/raw_readme.txt"
+  output_dir: "outputs"
+  cleaned_csv_path: "outputs/cleaned/CLEAN_House1_1min.csv"
+  tables_dir: "outputs/tables"
+  quality_report_csv: "outputs/tables/cleaning_quality_report.csv"
+  summary_csv: "outputs/tables/cleaning_summary.csv"
+  figures_dir: "outputs/figures"
+  metrics_dir: "outputs/metrics"
+  log_file: "outputs/cleaning.log"
+
+cleaning:
+  resample_rule: "1min"
+  resample_aggregation: "mean"
+  overlap_strategy: "part2_precedence"
+  duplicate_strategy: "last_nonmissing"
+  max_fill_gap_minutes: 2
+  high_power_screen_w: 10000
+
+channels:
+  Aggregate: "Whole-home aggregate"
+  Appliance1: "Fridge"
+  Appliance2: "Freezer(1)"
+  Appliance3: "Freezer(2)"
+  Appliance4: "Washer Dryer"
+  Appliance5: "Washing Machine"
+  Appliance6: "Dishwasher"
+  Appliance7: "Computer"
+  Appliance8: "Television Site"
+  Appliance9: "Electric Heater"

@@ -1,0 +1,6 @@
+Experiment,Model,MAE_Watts,RMSE_Watts,NMAE,Precision,Recall,F1_Score,Energy_True_kWh,Energy_Pred_kWh,Energy_Error_Pct
+Intra-House (House 1),Always-Off Baseline,13.02,154.64,1.0,0.0,0.0,0.0,43.75,0.0,100.0
+Intra-House (House 1),Heuristic Threshold (1.8kW),17.04,147.94,1.3092,0.1378,0.293,0.1874,43.75,18.39,57.97
+Intra-House (House 1),HistGradientBoosting,12.52,106.87,0.9622,0.2803,0.855,0.4222,43.75,38.26,12.55
+Cross-House (H2+3 -> H1),Always-Off Baseline,10.9,138.09,1.0,0.0,0.0,0.0,146.51,0.0,100.0
+Cross-House (H2+3 -> H1),HistGradientBoosting,17.35,122.86,1.5919,0.1619,0.7637,0.2671,146.51,142.8,2.53

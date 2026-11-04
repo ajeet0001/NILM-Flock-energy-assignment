@@ -1,0 +1,36 @@
+scenario,household,p_thresh_w,min_duration_min,max_gap_min,detected_cycle_count,median_duration_min,median_peak_power_w,median_energy_wh,total_energy_kwh
+"Baseline (P=20W, D=15m, G=3m)",House 1,20.0,15,3,438,33.0,2320.4,300.8,141.6
+"Baseline (P=20W, D=15m, G=3m)",House 2,20.0,15,3,347,95.0,2089.0,604.0,200.08
+"Baseline (P=20W, D=15m, G=3m)",House 3,20.0,15,3,691,65.0,1922.4,538.2,371.62
+"Baseline (P=20W, D=15m, G=3m)",House 5,20.0,15,3,827,42.0,2054.6,276.2,405.47
+"Baseline (P=20W, D=15m, G=3m)",House 20,20.0,15,3,206,73.5,2269.1,363.3,82.5
+"Lower Threshold (P=10W, D=15m, G=3m)",House 1,10.0,15,3,441,33.0,2320.1,299.1,142.42
+"Lower Threshold (P=10W, D=15m, G=3m)",House 2,10.0,15,3,346,99.0,2089.6,604.6,201.2
+"Lower Threshold (P=10W, D=15m, G=3m)",House 3,10.0,15,3,695,66.0,1922.1,536.5,372.17
+"Lower Threshold (P=10W, D=15m, G=3m)",House 5,10.0,15,3,846,43.0,2055.8,274.8,411.89
+"Lower Threshold (P=10W, D=15m, G=3m)",House 20,10.0,15,3,209,75.0,2269.0,363.5,82.63
+"Higher Threshold (P=50W, D=15m, G=3m)",House 1,50.0,15,3,434,32.0,2322.8,300.2,139.89
+"Higher Threshold (P=50W, D=15m, G=3m)",House 2,50.0,15,3,528,45.0,2063.6,399.3,190.06
+"Higher Threshold (P=50W, D=15m, G=3m)",House 3,50.0,15,3,695,63.0,1922.3,537.2,370.33
+"Higher Threshold (P=50W, D=15m, G=3m)",House 5,50.0,15,3,812,38.0,1985.0,246.9,366.54
+"Higher Threshold (P=50W, D=15m, G=3m)",House 20,50.0,15,3,230,67.0,2263.6,342.4,80.65
+"Shorter Duration (P=20W, D=10m, G=3m)",House 1,20.0,10,3,465,33.0,2316.8,292.7,144.24
+"Shorter Duration (P=20W, D=10m, G=3m)",House 2,20.0,10,3,353,95.0,2088.2,595.5,201.16
+"Shorter Duration (P=20W, D=10m, G=3m)",House 3,20.0,10,3,709,65.0,1921.1,533.5,372.2
+"Shorter Duration (P=20W, D=10m, G=3m)",House 5,20.0,10,3,932,39.0,2045.9,254.1,414.25
+"Shorter Duration (P=20W, D=10m, G=3m)",House 20,20.0,10,3,208,73.0,2269.0,362.9,82.71
+"Longer Duration (P=20W, D=25m, G=3m)",House 1,20.0,25,3,411,33.0,2325.7,303.6,138.19
+"Longer Duration (P=20W, D=25m, G=3m)",House 2,20.0,25,3,341,96.0,2089.3,605.7,198.94
+"Longer Duration (P=20W, D=25m, G=3m)",House 3,20.0,25,3,668,65.0,1924.2,544.0,368.35
+"Longer Duration (P=20W, D=25m, G=3m)",House 5,20.0,25,3,733,45.0,2065.7,292.5,395.51
+"Longer Duration (P=20W, D=25m, G=3m)",House 20,20.0,25,3,203,74.0,2269.8,363.2,81.14
+"Strict No-Gap (P=20W, D=15m, G=0m)",House 1,20.0,15,0,257,15.0,2316.8,264.8,75.28
+"Strict No-Gap (P=20W, D=15m, G=0m)",House 2,20.0,15,0,547,45.0,2061.0,352.8,185.46
+"Strict No-Gap (P=20W, D=15m, G=0m)",House 3,20.0,15,0,756,62.0,1915.6,512.8,367.89
+"Strict No-Gap (P=20W, D=15m, G=0m)",House 5,20.0,15,0,895,33.0,483.9,157.7,348.23
+"Strict No-Gap (P=20W, D=15m, G=0m)",House 20,20.0,15,0,410,37.0,736.8,93.0,81.09
+"Wider Gap Merge (P=20W, D=15m, G=5m)",House 1,20.0,15,5,413,33.0,2325.2,306.1,142.69
+"Wider Gap Merge (P=20W, D=15m, G=5m)",House 2,20.0,15,5,346,96.0,2088.8,604.9,200.7
+"Wider Gap Merge (P=20W, D=15m, G=5m)",House 3,20.0,15,5,680,65.0,1923.1,541.6,372.28
+"Wider Gap Merge (P=20W, D=15m, G=5m)",House 5,20.0,15,5,813,44.0,2060.6,281.0,412.98
+"Wider Gap Merge (P=20W, D=15m, G=5m)",House 20,20.0,15,5,204,74.0,2269.4,364.6,82.51
