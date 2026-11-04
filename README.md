@@ -15,7 +15,7 @@ This repository delivers an end-to-end, reproducible data-engineering and machin
 1. **Requirement 1 — Raw Data Discovery, Cleaning & Auditing (House 1):** Ingests asynchronous, event-driven raw current-clamp and plug-level IAM data (~8.5M rows), resolves Part 1 vs. Part 2 file overlaps, executes deterministic timestamp deduplication, resamples to a regular 1-minute UTC grid, and applies bounded short-gap interpolation while strictly preserving extended outages.
 2. **Requirement 2 — Multi-Household Washing Machine EDA (Houses 1, 2, 3, 5, 20):** Audits 3,004 days of monitoring data, establishes physics-informed cycle detection ($P \ge 20\text{ W}$, $D \ge 15\text{ min}$, $G \le 3\text{ min}$), extracts 2,509 verified cycles, and quantifies duration, peak power, energy, and diurnal flexibility across detached, semi-detached, and terraced dwellings.
 3. **Requirement 3 — Predictive Disaggregation Modeling (GBDT):** Formulates continuous active-power disaggregation as a supervised regression task. Evaluates an engineered Histogram Gradient Boosting Regressor against an Always-Off Baseline and a Heuristic Threshold Baseline across chronological holdout (House 1) and cross-household zero-shot transfer (Houses 2 & 3 $\rightarrow$ House 1).
-4. **Requirement 4 — Utility Strategy & Commercialization (`Recommendation.md`):** Formulates a utility-facing pilot specification for voluntary peak-to-solar laundry shifting, assesses sampling degradation at 15-minute and 30-minute smart-meter cadences, analyzes UK-to-India transferability, and presents a 25-question technical interview preparation guide.
+4. **Requirement 4 — Utility Strategy & Commercialization (`Recommendation.md`):** Formulates a utility-facing pilot specification for voluntary peak-to-solar laundry shifting, assesses sampling degradation at 15-minute and 30-minute smart-meter cadences, analyzes UK-to-India transferability, and specifies pilot governance gates.
 
 ---
 
@@ -29,8 +29,6 @@ This repository delivers an end-to-end, reproducible data-engineering and machin
 │   ├── cleaned/                        # Official cleaned REFIT dataset (CLEAN_House1.csv to CLEAN_House21.csv)
 │   └── raw/                            # Raw asynchronous REFIT files (RAW_House1_Part1/Part2.csv)
 ├── docs/                               # Documentation assets
-├── interview_prep/
-│   └── technical_interview_qa.md       # 25 cross-project technical interview questions & model answers
 ├── notebooks/
 │   ├── 01_data_cleaning.ipynb          # Requirement 1: Raw data audit & cleaning walkthrough
 │   ├── washing_machine_eda.ipynb       # Requirement 2: 5-house washing machine cycle analysis
@@ -54,12 +52,10 @@ This repository delivers an end-to-end, reproducible data-engineering and machin
 │   └── disaggregation_model.py         # Requirement 3: Feature engineering, GBDT model & evaluation
 ├── .gitignore                          # Git exclusion rules (prevents committing multi-GB CSVs)
 ├── DATA.md                             # Requirement 1 empirical data audit & provenance report
-├── disaggregation_model.ipynb          # Root-level copy of executed disaggregation notebook
 ├── README.md                           # Master repository documentation & run instructions
 ├── Recommendation.md                   # Requirement 4: One-page executive utility brief
 ├── requirements.txt                    # Pinned Python package dependencies (UTF-8)
-├── RESULTS.md                          # Full empirical results, figures & 25 interview Q&As
-└── washing_machine_eda.ipynb           # Root-level copy of executed EDA notebook
+└── RESULTS.md                          # Full empirical results, figures & benchmark analysis
 ```
 
 ---
@@ -171,7 +167,7 @@ python -m jupyter notebook notebooks/disaggregation_model.ipynb
 
 In accordance with academic and engineering transparency standards:
 - **Tools Used:** Antigravity AI coding assistant powered by Google DeepMind models.
-- **Contributions:** AI tools were utilized to draft vectorized pandas/scipy pipelines, generate matplotlib visualization scripts, format markdown documentation, and structure rigorous technical interview scenarios.
+- **Contributions:** AI tools were utilized to draft vectorized pandas/scipy pipelines, generate matplotlib visualization scripts, format markdown documentation.
 - **Human Verification:** All mathematical formulations, physical threshold definitions, data cleaning assertions, model outputs, and reported metrics were executed and validated against actual disk outputs. No statistics or metrics were fabricated.
 
 ---

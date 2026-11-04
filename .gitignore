@@ -53,3 +53,7 @@ data/cleaned/*.csv
 outputs/cleaned/*.csv
 results/disaggregation_test_predictions.csv
 
+# Interview preparation (internal only)
+interview_prep/
+
+

@@ -1,7 +1,7 @@
 # REFIT Washing-Machine Usage Analysis: Cross-Household Disaggregation EDA
 
 **Flock Energy NILM Appliance Disaggregation Platform**  
-**Senior Energy-Data Scientist & Technical Interviewer Evaluation Report**  
+**Senior Energy-Data Scientist Evaluation Report**  
 **Dataset:** Official Cleaned REFIT Electrical Load Measurements (`data/cleaned/CLEAN_House*.csv`)  
 **Cadence:** 1-Minute Resampled Grid  
 **Analysed Households:** House 1, House 2, House 3, House 5, and House 20 (covering detached, semi-detached, and mid-terrace homes with 2 to 4 occupants).
@@ -171,125 +171,7 @@ We evaluated the detection pipeline across 7 systematic parameter scenarios:
 
 ---
 
-## 10. Technical Interview Preparation (25 Questions & Model Answers)
-
-### Category 1: Thresholds, Hysteresis & Signal Processing
-
-#### Q1: Why did you choose a 20 W threshold instead of a standard `power > 0` rule?
-- **Answer:** In empirical data, appliances do not switch between 0 W and kilowatts cleanly. In House 5, the washing machine IAM recorded a continuous baseline draw of 2–4 W across 338,398 minutes (36.25% of the year), caused by internal display electronics, LED indicators, and sensor noise. A naive `power > 0` rule would classify the appliance as running continuously for over 4 months. A 20 W threshold cleanly eliminates standby power while capturing genuine electromechanical motor agitation ($\ge 80\text{ W}$) and water heating ($\ge 1,800\text{ W}$).
-- **Challenging Follow-up:** *What if an eco-mode draws 12 W during a gentle agitation phase?*
-- **Model Defense:** Setting a dual-threshold Schmitt trigger (hysteresis) with an activation threshold of 50 W and a deactivation threshold of 10 W preserves low-power agitation while preventing standby noise from triggering cycle starts.
-
-#### Q2: What is gap merging, and why is it mathematically critical for washing machine cycle detection?
-- **Answer:** Washing machines do not draw continuous power. Between drum rotations, during water drain/fill stages, and during soak phases, power drops below 20 W for 1 to 3 minutes. Without gap merging ($G=0$), a single 60-minute wash cycle fragments into 5 to 10 independent sub-events. As proven in our sensitivity analysis, without gap merging, House 1 detected cycles drop by 41.3% and total energy captured drops by 46.8% because fragmented phases fall below the 15-minute minimum duration threshold. Gap merging ($G_{\text{max}} = 3\text{ min}$) reconstructs the contiguous physical event.
-- **Challenging Follow-up:** *Doesn't gap merging risk combining two back-to-back separate laundry loads?*
-- **Model Defense:** Yes, if the occupant unloads and restarts the machine within 3 minutes. However, the physical inter-load interval (sorting clothes, adding detergent) typically exceeds 5 to 10 minutes. A 3-minute tolerance bridges intra-cycle pauses while keeping distinct loads separated.
-
-#### Q3: Why did you apply a minimum duration threshold of 15 minutes?
-- **Answer:** Domestic washing machine cycles (rapid, synthetic, cotton, wool) require a minimum duration of 15 to 120 minutes to complete wash, rinse, and spin phases. Pulses lasting $< 15$ minutes represent transient user interactions (turning dial, opening door drum light), spurious plug sensor noise, or aborted cycles. Discarding them prevents inflating cycle counts with zero-energy false positives.
-- **Challenging Follow-up:** *What if a user runs a 10-minute spin-only cycle?*
-- **Model Defense:** If spin-only or rinse-only cycles are of interest, the duration can be lowered to 8 minutes, but our sensitivity analysis shows this increases false detections in House 5 by 12.7%. 15 minutes is the optimal trade-off for whole-wash disaggregation.
-
----
-
-### Category 2: Energy Integration & Missingness Semantics
-
-#### Q4: How is energy calculated from 1-minute active power data, and how do you avoid miscalculations?
-- **Answer:** Power is an instantaneous rate ($W = \text{J/s}$). Energy is the time integral of power. On a uniform 1-minute grid ($\Delta t = \frac{1}{60}\text{ hour}$):
-  $$\text{Energy (Wh)} = \frac{1}{60} \sum_{t=1}^{N} P_t$$
-  A common error is treating missing minutes (`NaN`) as zero power, which artificially underestimates cycle energy, or imputing an average power across hours of network outage, which fabricates unmeasured kilowatt-hours. In our pipeline, cycles with $>20\%$ missing minutes are flagged as `is_truncated = True` and excluded from unbiased energy benchmarks.
-- **Challenging Follow-up:** *If readings arrive irregularly at 6–8 seconds, why resample to 1 minute instead of integrating raw trapezoids?*
-- **Model Defense:** Resampling to 1 minute aligns with whole-home aggregate smart meter cadences (standard for NILM disaggregation). Trapezoidal integration on raw 8-second data was benchmarked in Requirement 1; the 1-minute observation mean preserves total energy to within 0.12% while reducing computational complexity by 85%.
-
-#### Q5: How do you semantically distinguish an observed zero reading from missing data?
-- **Answer:** An observed zero reading represents physical evidence: the IAM is powered, communication is functional, and the appliance load is 0 W. Missing data represents an absence of evidence: the gateway lost connection, the household experienced an outage, or the sensor crashed. Treating missingness as zero manufactures unphysical "off" states and distorts appliance duty cycle calculations.
-
----
-
-### Category 3: Disaggregation, NILM & Behavioral Comparability
-
-#### Q6: Why does House 2 consume 604 Wh per cycle while House 1 consumes only 300 Wh? Does House 2 have an inefficient appliance?
-- **Answer:** Not necessarily. Water heating accounts for over 75% of a washing machine's electrical consumption (specific heat capacity of water is $4.184\text{ J/g}\cdot^\circ\text{C}$). Running a 60°C cotton cycle requires roughly double the heating energy of a 30°C or 40°C eco-cycle. House 2 has 4 occupants (likely children/family with heavily soiled clothing requiring higher temperatures) and a median cycle duration of 95 minutes. House 1 has 2 occupants with shorter 33-minute cycles. The variance reflects wash temperature program selection, not mechanical degradation.
-- **Challenging Follow-up:** *How could you verify this without a physical temperature sensor?*
-- **Model Defense:** By analyzing the duration and energy of the initial water heating phase: a 60°C cycle exhibits a sustained 2 kW plateau lasting 20–25 minutes, whereas a 30°C cycle drops power after 8–10 minutes.
-
-#### Q7: In House 1, how did you ensure Washer Dryer cycles were not confused with Washing Machine cycles?
-- **Answer:** The official REFIT `ReadME.txt` documents House 1 with `Appliance4 = Washer Dryer` and `Appliance5 = Washing Machine`. Inspecting the raw data confirmed that `Appliance4` exhibits continuous 2 kW resistive heating profiles for 90+ minutes (typical of tumble drying), whereas `Appliance5` displays the characteristic tumble/spin pattern of a washing machine. We explicitly bound our analysis to `Appliance5`.
-
-#### Q8: Could you use an HMM or machine learning event detector instead of a rule-based threshold?
-- **Answer:** Yes. A Hidden Markov Model (HMM) with discrete states (Off, Heat, Tumble, Spin) or an autoencoder can model the sequence of operational states. However, for an exploratory data analysis baseline, a transparent threshold with gap merging is deterministic, computationally instant ($<0.1\text{ s}$ per year of data), easily audited by energy stakeholders, and requires zero labeled training data. It establishes the ground truth benchmark against which complex NILM models (e.g. Seq2Point, FHMM) must be evaluated.
-
----
-
-### Category 4: Grid Flexibility & Demand-Side Response (DSR)
-
-#### Q9: What does the diurnal usage profile indicate about DSR potential for washing machines?
-- **Answer:** Over 62% of washing machine cycles start between 08:00 and 13:00 UTC, with a secondary peak at 17:00. This indicates that washing machines are operated when occupants are active at home. Because laundry is deferrable (clothes can be washed automatically via delayed start), this load can be shifted to midday solar peak generation (11:00–14:00) or overnight wind generation (01:00–05:00) via dynamic time-of-use tariffs.
-
-#### Q10: How would you validate detected cycle ground truth if no sub-metered IAM existed?
-- **Answer:** In a true NILM scenario with only aggregate smart meter data, validation requires:
-  1. Corroborating aggregate active and reactive power step changes ($\Delta P \approx 2\text{ kW}$, $\Delta Q \approx 0\text{ var}$ for resistive heating; fluctuating $\Delta P \approx 200\text{ W}, \Delta Q \approx 150\text{ var}$ for inductive motor rotation).
-  2. Time-of-use probability priors.
-  3. Appliance cycle duration invariants.
-
----
-
-### Category 5: Edge Cases, Quality Flags & Advanced Scenarios
-
-#### Q11: How do you handle cycles that are interrupted by a power cut or dataset boundary?
-- **Answer:** The pipeline implements an `is_truncated` boolean flag. If a cycle's start index is 0, its end index touches the dataset boundary, or $>20\%$ of its duration contains `NaN`s, it is flagged as truncated. Truncated cycles are included in availability counts but excluded from duration and energy distribution summaries to prevent left-censoring or right-censoring bias.
-
-#### Q12: What is the impact of Strathclyde's `Issues` column on cycle detection?
-- **Answer:** In the official cleaned dataset, `Issues = 1` indicates intervals identified by the REFIT research team as having sensor clock anomalies, router dropouts, or forward-filled load estimates. Across our 5 homes, `Issues = 1` occurs in $1.1\%$ to $7.6\%$ of 1-minute bins. We audit these intervals and flag any cycle overlapping with `Issues = 1` to ensure downstream modeling pipelines can filter them during training.
-
-#### Q13: What happens if a washing machine has a brushless DC (BLDC) motor vs. a universal motor?
-- **Answer:** A universal motor with phase-angle control exhibits higher electrical noise and sharp current spikes during drum acceleration. Modern inverter-driven BLDC motors exhibit smooth ramp-ups and lower tumble power (50–120 W). Both, however, rely on identical 2 kW resistive immersion heating elements for hot water, meaning the heating signature remains universally invariant.
-
-#### Q14: Why is median power per cycle much lower than peak power?
-- **Answer:** Peak power reflects the resistive water heater (2,000 W – 2,400 W), which operates for only 10 to 20 minutes at the beginning of the cycle. For the remaining 40 to 80 minutes, the appliance operates its motor (100–300 W) and drain pump (30 W), bringing the time-weighted mean power down to 300 W – 500 W.
-
-#### Q15: How would you distinguish a washing machine from a dishwasher in NILM disaggregation?
-- **Answer:** Both appliances draw 2 kW for water heating. However:
-  1. **Motor Signature:** A dishwasher operates a continuous circulation pump drawing a steady 100–180 W without reverse pauses. A washing machine motor reverses direction every 15–30 seconds, causing cyclical 150 W – 300 W power oscillations.
-  2. **Spin Phase:** Only a washing machine concludes with high-speed centrifugal extraction peaking at 500–800 W. Dishwashers end with a static drying phase (either passive or low-power heating).
-
-#### Q16: How do seasonal weather changes impact washing machine electricity consumption?
-- **Answer:** Cold winter water inlet temperatures (5°C–8°C) require significantly more thermal energy ($\Delta T \approx 35^\circ\text{C}$ to reach 40°C) than summer inlet water (18°C–22°C, $\Delta T \approx 20^\circ\text{C}$). Consequently, water heating duration and cycle energy increase by 25%–35% in winter for identical program selections.
-
-#### Q17: What is the risk of using a 50 W threshold instead of 20 W?
-- **Answer:** In our sensitivity analysis, a 50 W threshold truncated low-power drain pump phases and gentle tumble intervals, cutting House 5 median energy by 10.6% and fragmenting House 2 cycles. 20 W is the optimal empirical trade-off.
-
-#### Q18: Could a household occupant's manual pause be distinguished from a soak cycle?
-- **Answer:** An automatic soak pause is deterministic, lasting 1 to 3 minutes before motor resumption. A human pause (e.g. to add forgotten clothing) is stochastic and often lasts $>10$ minutes, which our algorithm intentionally treats as cycle termination or two separate operational events.
-
-#### Q19: Why not use a sliding window moving average before thresholding?
-- **Answer:** Moving averages smooth sharp edges. Water heating starts and stops abruptly (step functions of 2 kW in $<8$ seconds). A moving average smears this transition, artificially delaying the cycle start and extending the cycle end, while distorting peak power estimation.
-
-#### Q20: How would you deploy this pipeline in a real-time smart home IoT gateway?
-- **Answer:** In a streaming architecture, the vectorized batch detector is replaced with an online finite state machine (FSM). The FSM maintains state variables (`OFF`, `ACTIVE`, `GAP_COUNT`, `ACCUMULATED_ENERGY`). A cycle start is emitted when $P \ge 20\text{ W}$, a gap counter increments when $P < 20\text{ W}$, and a cycle completion event is finalized when `GAP_COUNT > 3` and `DURATION >= 15`. This requires $O(1)$ memory and $<1\text{ ms}$ compute per minute.
-
-#### Q21: What evidence demonstrates that House 5's 3 W draw is standby power rather than sensor zero-offset error?
-- **Answer:** When House 5 experienced whole-house power disconnects or when other appliances in the house were unplugged, the reading dropped to 0 W. Furthermore, during active washing cycles, the power rises seamlessly from 3 W to 2,000 W. This proves the 3 W is active appliance quiescent power.
-
-#### Q22: Why does House 3 have nearly double the cycle frequency of House 1 despite both having 2 occupants?
-- **Answer:** House 3 recorded 691 cycles (7.87 c/wk) vs. House 1's 438 cycles (4.80 c/wk). This illustrates lifestyle and occupational variance: House 3 occupants may engage in daily athletic/outdoor activities requiring frequent small laundry loads, or wash bedding and linens separately. This highlights why occupancy alone cannot predict energy consumption without behavioral sub-metering.
-
-#### Q23: How would you quantify false negative rates without manual video recording of occupants?
-- **Answer:** By running whole-home aggregate energy balance checks. If an unexplained 2 kW heating spike accompanied by periodic motor tumbling appears in the Whole-Home Aggregate channel without a corresponding IAM event, it indicates a false negative (or an unmonitored wet appliance).
-
-#### Q24: What is the effect of daylight savings time (DST) on the hourly usage analysis?
-- **Answer:** The REFIT raw data accounts for DST, and timestamps are anchored in canonical UTC. UK clock time shifts by $+1\text{ hour}$ (BST) between late March and late October. For customer presentation, converting UTC to `Europe/London` aligns morning peaks with true local waking hours, shifting the UTC 08:00–11:00 peak to 09:00–12:00 BST in summer.
-
-#### Q25: How does this EDA directly inform Requirement 3 and downstream disaggregation modeling?
-- **Answer:** It provides ground-truth operational bounds:
-  - Appliance state signatures: Off ($<20\text{ W}$), Tumble (80–350 W), Heat (1,800–2,400 W), Spin (400–800 W).
-  - Duration priors: 15 to 120 minutes (log-normal distribution peaking at 45 minutes).
-  - Energy priors: 200 Wh to 900 Wh per cycle.
-  Downstream NILM algorithms (e.g. Seq2Point CNNs or factorial HMMs) use these priors as regularizers to suppress unphysical disaggregation predictions.
-
----
-
-## 11. Reproducibility & Deliverable File Verification
+## 10. Reproducibility & Deliverable File Verification
 
 All files have been generated, executed, and validated in the workspace:
 
@@ -307,7 +189,7 @@ All files have been generated, executed, and validated in the workspace:
 | **Figure 4** | [`results/figures/hourly_usage_profile.png`](results/figures/hourly_usage_profile.png) | Verified: Diurnal cycle starts and hourly active load profile. |
 | **Figure 5** | [`results/figures/day_of_week_usage.png`](results/figures/day_of_week_usage.png) | Verified: Day-of-week frequency and energy totals. |
 | **Figure 6** | [`results/figures/coverage_missingness_diagnostic.png`](results/figures/coverage_missingness_diagnostic.png) | Verified: Operating state breakdown and weekly frequency vs occupancy. |
-| **Documentation** | [`RESULTS.md`](RESULTS.md) | Verified: Complete engineering report and 25 technical interview Q&As. |
+| **Documentation** | [`RESULTS.md`](RESULTS.md) | Verified: Complete engineering report and diagnostic visualizations. |
 | **Run Instructions** | [`README.md`](README.md) | Verified: End-to-end setup and reproduction instructions. |
 
 ---
@@ -326,7 +208,7 @@ python src/washing_machine_eda.py
 # PART 2: Non-Intrusive Load Monitoring (NILM) Disaggregation Model
 ## Machine Learning Disaggregation of Washing Machine Power from Whole-Home Aggregate
 
-**Role:** Senior Machine Learning Engineer (NILM Specialist) & Technical Interviewer  
+**Role:** Senior Machine Learning Engineer (NILM Specialist)  
 **Dataset:** Official Cleaned REFIT Dataset (`data/cleaned/CLEAN_House*.csv`)  
 **Resolution:** 1-Minute Resampled Cadence  
 **Target:** Continuous Appliance Active Power ($y_t$ in Watts) for Washing Machine  
@@ -334,7 +216,7 @@ python src/washing_machine_eda.py
 
 ---
 
-## 12. Learning Problem Definition & NILM Foundations
+## 11. Learning Problem Definition & NILM Foundations
 
 ### Mathematical Formulation
 Let $X_t \in [0, \infty)$ denote the measured whole-home aggregate active power at minute $t$, and let $y_t \in [0, \infty)$ denote the true monitored washing machine active power at the same minute. In domestic single-phase power distribution, the instantaneous aggregate active power follows the physical conservation of power:
@@ -363,7 +245,7 @@ To break this degeneracy, the model must condition on **temporal window context*
 
 ---
 
-## 13. Baseline Models & Performance Floor
+## 12. Baseline Models & Performance Floor
 
 We establish two transparent, reproducible baselines fitted strictly on training data:
 
@@ -380,7 +262,7 @@ $$\hat{y}_t = \begin{cases} P_{\text{active, median}}^{\text{train}} \approx 1,7
 
 ---
 
-## 14. Leakage-Resistant Validation Strategy
+## 13. Leakage-Resistant Validation Strategy
 
 A major failure mode in published NILM literature is **data leakage** caused by random train/test splitting. In high-frequency time series, consecutive minutes within the same washing cycle exhibit strong autocorrelation. Randomly shuffling rows leaks adjacent minutes from the same physical cycle into both train and test partitions, inflating reported accuracy.
 
@@ -401,7 +283,7 @@ To ensure strictly honest, deployable evaluation, we implement two distinct prot
 
 ---
 
-## 15. Model Architecture & Feature Engineering
+## 14. Model Architecture & Feature Engineering
 
 We select **Histogram Gradient Boosting Regression** (`HistGradientBoostingRegressor`):
 - **Why GBDT over Deep Learning for tabular window NILM:**
@@ -428,7 +310,7 @@ This post-processing is physically grounded and eliminates unphysical negative e
 
 ---
 
-## 16. Quantitative Benchmark Results
+## 15. Quantitative Benchmark Results
 
 The following empirical metrics were measured across all 201,683 held-out test minutes for House 1 (Intra-House) and all 806,732 test minutes for Unseen House 1 (Cross-House):
 
@@ -448,7 +330,7 @@ The following empirical metrics were measured across all 201,683 held-out test m
 
 ---
 
-## 17. Diagnostic Visualizations & Error Analysis
+## 16. Diagnostic Visualizations & Error Analysis
 
 The pipeline generated four deliverable diagnostic figures in `results/figures/`:
 
@@ -471,7 +353,7 @@ The pipeline generated four deliverable diagnostic figures in `results/figures/`
 
 ---
 
-## 18. Research & System Trade-Off Discussion
+## 17. Research & System Trade-Off Discussion
 
 ### 1. GBDT vs. Deep Learning (Seq2Point / WaveNet / Transformer)
 - *Deep Learning:* Sequence-to-point (Seq2Point) CNNs and Dilated WaveNet architectures excel at learning complex receptive fields directly from raw sequences without manual lag engineering. However, they require extensive GPU resources, long training times (hours vs. seconds), and hundreds of megabytes of weights.
@@ -490,137 +372,7 @@ The pipeline generated four deliverable diagnostic figures in `results/figures/`
 
 ---
 
-## 19. Technical Interview Preparation (25 Questions & Model Answers)
-
-Below are 25 technical interview questions designed to test deep mastery of NILM, energy data engineering, applied machine learning, and production system architecture:
-
-### Category 1: NILM Foundations & Physical Modeling (Questions 1–6)
-
-#### Q1: Why is aggregate power non-identifiable at 1-minute active power resolution?
-*Model Answer:* At 1-minute resolution, reactive power, harmonics, and high-frequency transient switching trajectories are collapsed into a single active power scalar ($P_t = V_{\text{rms}} I_{\text{rms}} \cos \phi$). Multiple household appliances share identical resistive heating elements (~2.0 to 2.5 kW), such as electric kettles, ovens, dishwashers, and washing machines. Without temporal window context or multi-modal sensing (reactive power, voltage), instantaneous power cannot uniquely identify the active appliance.  
-*Follow-Up:* How would adding reactive power ($Q$ in VAR) help differentiate a washing machine from a kettle? (Answer: Kettles are purely resistive with $\cos\phi \approx 1.0$, whereas washing machines feature inductive induction/universal motors with $\cos\phi \approx 0.7 - 0.85$, shifting the power vector into the complex $P-Q$ plane).
-
-#### Q2: What are the physical operating stages of a front-loading washing machine, and how do their electrical signatures differ?
-*Model Answer:* 1) Water fill / soak: Cold inlet water fills the drum; active power is $<10\text{ W}$ (solenoid valves). 2) Heating: Immersion element draws 1,800–2,400 W for 12–25 minutes until the target water temperature (30°C/40°C/60°C) is reached. 3) Wash agitation: Drum reverses every 30–60 seconds, drawing 80–350 W pulses with 0–5 W resting gaps. 4) Drain: Drain pump draws 30–60 W. 5) Spin: Drum accelerates to 1,000–1,400 RPM, drawing 400–800 W with high inertial power variations.  
-*Follow-Up:* Why does a washing machine cycle have internal power drops to 0 W, and what algorithmic problem does this create? (Answer: Drum reversal pauses and soak intervals drop power below detection thresholds, causing naive detectors to fragment a single wash cycle into multiple disconnected sub-events).
-
-#### Q3: Why is energy disaggregation formulated as a regression problem rather than pure classification?
-*Model Answer:* Energy is the integral of active power over time: $E = \int P(t)\,dt$. While classification identifies whether an appliance is ON or OFF, it cannot quantify the actual power drawn, which varies substantially depending on cycle temperature, drum load, and water volume. Continuous regression estimates instantaneous power $y_t$, allowing direct numerical integration to calculate kWh for billing and carbon accounting.  
-*Follow-Up:* If you only had an ON/OFF classifier, how could you estimate energy, and what error would that introduce? (Answer: By multiplying active duration by a fixed average active power; this introduces large errors when washing temperature varies, e.g., 30°C eco-wash using 0.3 kWh vs 60°C intensive wash using 1.2 kWh).
-
-#### Q4: Why must negative predictions be clipped in NILM post-processing?
-*Model Answer:* Passive residential consumer appliances cannot back-feed energy into the electrical panel; their active power consumption is strictly non-negative ($y_t \ge 0$). Unconstrained machine learning models (like regression trees or neural networks with linear output heads) frequently produce small negative predictions during low-load periods due to residual noise fitting. Clipping $\hat{y}_t = \max(0, \hat{y}_t)$ enforces physical admissibility and prevents unphysical negative energy accumulation.  
-*Follow-Up:* Does clipping introduce statistical bias? (Answer: Yes, clipping shifts the mean of the residual distribution slightly positive because negative errors are truncated while positive errors remain. However, this small statistical bias is physically necessary to satisfy the domain boundary constraint).
-
-#### Q5: What is the difference between active power ($P$), reactive power ($Q$), and apparent power ($S$), and which does REFIT measure?
-*Model Answer:* In AC circuits, apparent power $S = V_{\text{rms}} I_{\text{rms}}$ (measured in Volt-Amperes, VA). Active (real) power $P = V_{\text{rms}} I_{\text{rms}} \cos\theta$ (measured in Watts, W) represents the net rate of energy transfer that performs actual work. Reactive power $Q = V_{\text{rms}} I_{\text{rms}} \sin\theta$ (measured in Volt-Amperes Reactive, VAR) represents energy oscillating between the source and reactive load components (inductors and capacitors). REFIT measures active power in Watts via current clamps and IAMs.  
-*Follow-Up:* What limitation does active-power-only measurement impose on disaggregating heat pumps or air conditioners? (Answer: Inverter-driven compressors and motor drives introduce variable reactive power and harmonic distortion that cannot be detected from real power alone).
-
-#### Q6: How does sampling frequency affect the choice of NILM algorithms?
-*Model Answer:* At high frequency (1 kHz to 1 MHz), algorithms extract microscopic transient switching trajectories, voltage-current ($V-I$) trajectory loops, and high-order harmonics via STFT or wavelets. At low frequency (1 Hz to 1/60 Hz, such as REFIT's 1-minute grid), transient waveforms are averaged out; algorithms must rely on macro-level state transitions, operating duration, rolling power statistics, and temporal profile morphology.  
-*Follow-Up:* What is the main deployment hurdle of high-frequency NILM? (Answer: High-frequency data requires expensive, specialized metering hardware, substantial local compute, and massive bandwidth that standard utility smart meters cannot support).
-
----
-
-### Category 2: Machine Learning Architecture & Feature Engineering (Questions 7–12)
-
-#### Q7: Why did you choose Histogram Gradient Boosting Trees over a Sequence-to-Point (Seq2Point) CNN?
-*Model Answer:* 1) Compute efficiency: GBDT trains on 605k rows in under 10 seconds on a standard CPU, whereas deep CNNs require GPU infrastructure and tens of minutes. 2) Data efficiency: With 1-minute resolution, 21 domain-engineered features (lags, leads, rolling statistics) provide strong inductive bias, matching deep learning performance without overfitting. 3) Edge deployment: A 150-tree ensemble compiles into $<500\text{ KB}$ of memory with microsecond inference latency, making it ideal for low-cost smart meter gateways.  
-*Follow-Up:* Under what conditions would you switch to a Seq2Point or WaveNet architecture? (Answer: When scaling to 1-second cadence across thousands of homes, where manual feature engineering becomes unwieldy and deep convolutions can automatically learn hierarchical temporal filters).
-
-#### Q8: Explain the role of lead features ($t+1, \dots, t+15$) in your feature matrix. Does this violate causality?
-*Model Answer:* Lead features provide future temporal context, allowing the model to determine whether a current 2 kW power surge is sustained for 15 minutes (characteristic of a washing machine heating cycle) or drops off after 3 minutes (characteristic of a kettle). In real-time streaming, lead features introduce a 15-minute inference latency buffer. For energy billing, daily customer feedback, and post-hoc demand-response verification, this 15-minute buffer is completely acceptable. For instantaneous alert systems, a causal-only feature set (lags only) must be used.  
-*Follow-Up:* How much performance do you lose by removing lead features and using a strictly causal model? (Answer: In our experiments, removing future context increases false positives from kettles by ~18% because the model cannot verify the duration of the power plateau until after it has elapsed).
-
-#### Q9: How do rolling standard deviation and rolling maximum features help isolate washing machines?
-*Model Answer:* The wash agitation and spin phases of a washing machine consist of continuous motor reversals and speed ramps, creating high local variance (rolling standard deviation of 80–200 W) around an intermediate mean. In contrast, steady resistive heaters (such as immersion heaters or space heaters) exhibit zero standard deviation during their on-plateau. Rolling maximum captures the upper power envelope, confirming the presence of the heating phase.  
-*Follow-Up:* What happens to rolling features at file boundaries or after long outages? (Answer: NaNs are introduced by boundary shifts; they must be handled by backward/forward fill or explicit missingness masking to prevent corrupted predictions).
-
-#### Q10: Why did you use cyclical sine and cosine encodings for hour-of-day and day-of-week?
-*Model Answer:* Time of day is periodic: 23:59 and 00:01 are 2 minutes apart, but a raw numerical feature (23 vs 0) represents the maximum distance. Sine/cosine harmonics map time onto a continuous unit circle ($\sin(2\pi h / 24), \cos(2\pi h / 24)$), preserving true circular distance and allowing distance-based and tree-based models to recognize overnight vs daytime usage patterns smoothly.  
-*Follow-Up:* What is the danger of relying heavily on time-of-day features in disaggregation? (Answer: The model risks learning household occupancy schedules rather than the appliance's electrical signature, failing when a user washes clothes at an unusual time, such as midnight).
-
-#### Q11: How do you handle collinearity among multiple lagged features in gradient boosting?
-*Model Answer:* Unlike linear regression, where collinearity causes variance inflation and unstable coefficients, tree-based models (such as GBDT) are robust to collinear features. When two features are correlated (e.g., $X_{t-1}$ and $X_{t-2}$), the tree greedily splits on whichever provides the highest gradient reduction at each node. To prevent dominant features from overshadowing subtler cues, we constrain tree depth (`max_depth=6`) and enforce a minimum leaf size (`min_samples_leaf=50`).  
-*Follow-Up:* Would PCA or feature selection improve the model? (Answer: In testing, PCA reduced interpretability and slightly degraded performance because physical power values at specific lag offsets (e.g., 5 min vs 15 min) correspond directly to physical cycle phase transitions).
-
-#### Q12: Why is Normalized Mean Absolute Error (NMAE) preferred over $R^2$ in NILM evaluation?
-*Model Answer:* $R^2$ is sensitive to the variance of the target. In domestic NILM, where an appliance is off for 98% of the year, a model that predicts near zero can produce misleading $R^2$ scores depending on total variance. NMAE normalizes absolute error by the total ground truth energy:
-$$\text{NMAE} = \frac{\sum_t |y_t - \hat{y}_t|}{\sum_t y_t}$$
-An NMAE of 0.96 indicates total error is 96% of the appliance's consumption, providing an intuitive, scale-independent ratio directly comparable across households.  
-*Follow-Up:* What is the NMAE of the Always-Off baseline? (Answer: Exactly 1.000, since $\sum |y_t - 0| / \sum y_t = 1.0$. Any model with NMAE $< 1.0$ is outperforming the zero-prediction baseline in total error).
-
----
-
-### Category 3: Validation, Leakage & Generalization (Questions 13–18)
-
-#### Q13: Why is random train/test splitting considered a fatal flaw in time-series NILM?
-*Model Answer:* High-frequency electrical data exhibits extreme temporal autocorrelation. A washing machine cycle spans 30 to 120 consecutive minutes. If rows are randomly partitioned, minutes $t$ and $t+2$ of the same cycle will be placed in the training set while minute $t+1$ is placed in the test set. The model can simply interpolate between known adjacent points rather than learning to disaggregate from aggregate power, yielding severely inflated test scores that fail in production.  
-*Follow-Up:* What validation scheme must be used instead? (Answer: Chronological holdout splitting within households, or Leave-One-House-Out cross-validation across independent homes).
-
-#### Q14: How does performance change when testing on an unseen household versus an unseen time period of the same household?
-*Model Answer:* In our REFIT evaluation, testing on an unseen time period of House 1 achieved an RMSE of **106.87 W** (a 30.9% reduction vs baseline) and an F1 of **0.422**. When testing on 100% unseen House 1 using a model trained on Houses 2 and 3, RMSE was **122.86 W** (an 11.0% reduction) and F1 was **0.267**. Performance degrades on unseen homes due to differences in appliance make/model, base electrical noise, and user cycle preferences.  
-*Follow-Up:* What technique can bridge the domain gap between households without sub-metered ground truth? (Answer: Unsupervised domain adaptation, adversarial feature alignment, or fine-tuning with a few user-labeled cycle prompts).
-
-#### Q15: Why did the Heuristic Baseline achieve a worse MAE (17.04 W) than the Always-Off Baseline (13.02 W)?
-*Model Answer:* The Heuristic Baseline flags any aggregate load $\ge 1,800\text{ W}$ as a washing machine. Because electric kettles, ovens, and hobs frequently cross 1,800 W throughout the week, the heuristic incurs massive false positives, predicting 1,750 W when the true appliance power is 0 W. Each false positive adds 1,750 W to the absolute error, causing MAE to increase significantly.  
-*Follow-Up:* Why does this demonstrate the danger of simple thresholding in NILM? (Answer: It proves that peak power alone is insufficient for disaggregation; temporal duration, shape, and surrounding context are required to reject transient high-power distractor loads).
-
-#### Q16: How do you prevent target leakage when generating rolling features?
-*Model Answer:* Target leakage occurs if target labels ($y$) are used in feature engineering. In our pipeline, all rolling features (mean, std, max) and lags are computed **strictly from the aggregate input $X_t$**, never from the appliance target $y_t$. Furthermore, rolling windows are computed chronologically, and all scaler/baseline transformations are fitted strictly on training data.  
-*Follow-Up:* If using bidirectional windows (leads), how do you prevent leakage at the train/test split boundary? (Answer: The training set must end at $T_{\text{split}} - \tau_{\text{lead}}$, or the test set must begin after a buffer window equal to the maximum lead parameter to prevent test-period aggregate values from informing the final training samples).
-
-#### Q17: What is the impact of data missingness on NILM training, and how did you handle missing values?
-*Model Answer:* Missing readings occur due to sensor disconnects, power outages, and gateway failures. In our pipeline, short gaps ($\le 5\text{ minutes}$) were linearly forward-filled under the physical assumption that operating state is invariant over 1–5 minutes. Extended outages ($>5\text{ minutes}$) were preserved as missing and dropped from training/evaluation sets to prevent synthetic values from corrupting model gradients.  
-*Follow-Up:* Why should missing values never be filled with zero? (Answer: Filling missing values with zero creates false dropouts, artificially fragmenting active cycles and training the model to associate sensor failure with an appliance turning off).
-
-#### Q18: What is the class imbalance ratio in your test set, and how does it affect precision and recall?
-*Model Answer:* In House 1, the washing machine is active ($\ge 20\text{ W}$) for only **1.64%** of test minutes (approximately 3,300 minutes out of 201,683). In such severe imbalance (approx. 60:1 negative-to-positive ratio), even a low false-positive rate of 2% produces more false-positive minutes than the entire set of true-positive minutes, capping Precision at **28.03%** despite achieving **85.50% Recall**.  
-*Follow-Up:* How can you improve Precision without collapsing Recall? (Answer: By applying an event-level post-filtering rule that requires minimum consecutive active minutes (e.g., 15 min) or a minimum integrated cycle energy before confirming a detected event).
-
----
-
-### Category 4: Production Engineering, Edge Deployment & Optimization (Questions 19–25)
-
-#### Q19: How would you architect this disaggregation pipeline for real-time edge execution on a smart meter gateway?
-*Model Answer:* 1) Local circular buffer: Maintain a 31-element ring buffer in RAM storing the last 30 minutes of aggregate active power readings. 2) Feature computation: Compute rolling statistics in $O(1)$ time using running sum and running sum-of-squares accumulators. 3) Inference: Execute tree traversals using compiled C/Rust decision trees (e.g., `treelite` or `m2cgen`). 4) Output: Emit point predictions with a 15-minute sliding window or stream causal predictions immediately.  
-*Follow-Up:* What is the memory footprint of such an edge implementation? (Answer: The ring buffer requires $<1\text{ KB}$, and 150 shallow decision trees require $<300\text{ KB}$ of flash/RAM, fitting comfortably within microcontrollers like an ESP32 or ARM Cortex-M4).
-
-#### Q20: How do you verify aggregate power conservation when disaggregating multiple appliances simultaneously?
-*Model Answer:* In a multi-appliance NILM system, the sum of disaggregated appliance predictions must not exceed the total aggregate load:
-$$\sum_{m=1}^{M} \hat{y}_t^{(m)} \le X_t$$
-If the unconstrained sum exceeds $X_t$, a constrained post-optimization step (e.g., softmax scaling or quadratic programming projection) must project predictions back onto the simplex $\sum \hat{y}_t^{(m)} \le X_t - P_{\text{baseload}}$.  
-*Follow-Up:* What happens if unmonitored appliances are running? (Answer: A slack variable representing "other / unmodeled loads" must be included in the optimization objective: $X_t = \sum \hat{y}_t^{(m)} + \hat{y}_t^{(\text{other})}$).
-
-#### Q21: How would you design a continuous monitoring and model drift detection system for deployed NILM models?
-*Model Answer:* 1) Track input distribution drift: Monitor aggregate power distribution shifts via Population Stability Index (PSI) or Wasserstein distance. 2) Energy balance tracking: Compute the ratio of disaggregated energy to total household consumption $\sum \hat{E}_m / E_{\text{total}}$; sudden drift outside historical bands flags potential degradation. 3) Cycle plausibility checks: Track weekly cycle frequency and duration distributions per home. If a household suddenly registers 50 cycles a week, trigger an automated anomaly alert.  
-*Follow-Up:* How do seasonal changes affect disaggregation drift? (Answer: In winter, space heaters and electric blankets increase aggregate baselines, leading to higher false-positive rates unless season/temperature features are incorporated).
-
-#### Q22: What privacy implications arise from disaggregating domestic smart meter data?
-*Model Answer:* Disaggregated appliance traces reveal granular personal lifestyle information: sleep/wake times (kettle, toaster), occupancy patterns (lighting, TV), laundry frequency, and even specific health/dietary habits. To preserve privacy: 1) Deploy edge computing so raw data and IAM traces never leave the home. 2) Apply differential privacy or federated learning to aggregate model updates without exposing individual traces. 3) Transmit only daily or weekly energy summaries rather than high-frequency timeseries.  
-*Follow-Up:* How does 1-minute sampling compare to 1-second sampling in terms of privacy risk? (Answer: 1-minute data reveals appliance usage events, but 1-second data can reveal individual TV channel changes, kettle water fill levels, and specific appliance models via electrical noise signatures).
-
-#### Q23: How would you evaluate the economic value of this model for a demand-response flexibility aggregator?
-*Model Answer:* A flexibility aggregator earns revenue by shedding or shifting load during grid stress events (e.g., 17:00–19:00). The economic value of NILM is:
-1) **Targeting:** Identifying households that regularly run washing machines during peak hours and enrolling them in automated time-of-use tariffs.
-2) **Measurement & Verification (M&V):** Quantifying exact shifted kWh during demand response events without requiring costly sub-meters.
-3) **Penalty Mitigation:** Avoiding false flexibility commitments by accurately confirming whether an appliance is currently in an un-deferrable heating phase.  
-*Follow-Up:* What is the cost trade-off between a £50 smart sub-meter plug and a software-only NILM model? (Answer: Across 1 million utility customers, hardware sub-metering costs £50M+ in Capex and installation, whereas software NILM leverages existing smart meter infrastructure at near-zero marginal hardware cost).
-
-#### Q24: What failure cases did your error analysis reveal, and what architectural improvements would solve them?
-*Model Answer:* Error analysis identified three distinct failure modes:
-1) *Kettle/Cooker False Positives:* Sudden 2.5 kW spikes occasionally trigger false positive predictions. Solution: Increase lead window context from 15 to 25 minutes or add a persistent duration filter.
-2) *Motor Agitation Attenuation:* Low-power tumble pulses (80–150 W) are often swallowed by aggregate baseload noise. Solution: Use a two-stage hierarchical model (Stage 1 detects cycle onset from the heating peak; Stage 2 activates a specialized state machine to track drum agitation and spin).
-3) *Cycle Truncation:* Cycles cut off at data outages. Solution: Explicit outage mask feature alerting the model of incomplete temporal buffers.  
-*Follow-Up:* What is a two-stage hierarchical NILM model? (Answer: Stage 1 performs binary cycle detection using a high-precision classifier; Stage 2 performs continuous regression only during windows confirmed active by Stage 1).
-
-#### Q25: How would you handle households with combined Washer-Dryers versus separate appliances?
-*Model Answer:* As established in our Requirement 2 data audit, House 1 contains both a Washer Dryer (`Appliance4`) and a separate Washing Machine (`Appliance5`). Tumble drying features sustained 2 kW resistive heating for 60–120 minutes without drum soak pauses. If a model trained on washing machines is exposed to a washer dryer, it will mistake the drying phase for an extended wash cycle. In production, models must either be trained on composite laundry multi-label targets or use cycle duration priors to classify wash cycles (30–90 min with soak drops) versus dry cycles (continuous plateau).  
-*Follow-Up:* Can a model distinguish a 40°C wash from a 60°C wash on the same machine? (Answer: Yes; water heating duration is proportional to $\Delta T = T_{\text{target}} - T_{\text{inlet}}$. A 60°C cycle exhibits a heating plateau approximately 1.8 to 2.2 times longer than a 30°C cycle).
-
----
-
-## 20. Requirement 3 Acceptance Criteria & Deliverable Verification
+## 18. Requirement 3 Acceptance Criteria & Deliverable Verification
 
 | Deliverable Item | File Location | Status | Empirical Validation Summary |
 |---|---|---|---|
@@ -634,5 +386,5 @@ If the unconstrained sum exceeds $X_t$, a constrained post-optimization step (e.
 | **Figure 2 (Residuals)**| [`results/figures/disaggregation_residuals.png`](results/figures/disaggregation_residuals.png) | **Verified & Executed** | Residual error histogram ($\mu = -0.56\text{ W}$) and heteroskedasticity scatter vs. load. |
 | **Figure 3 (Comparison)**| [`results/figures/disaggregation_baseline_comparison.png`](results/figures/disaggregation_baseline_comparison.png) | **Verified & Executed** | 4-panel bar chart comparing MAE, RMSE, Active F1, and NMAE. |
 | **Figure 4 (Failures)** | [`results/figures/disaggregation_failure_cases.png`](results/figures/disaggregation_failure_cases.png) | **Verified & Executed** | 3 case studies: Kettle false positive, agitation underestimation, clean true positive. |
-| **Comprehensive Report**| [`RESULTS.md`](RESULTS.md) | **Verified & Executed** | In-depth engineering documentation, NILM theory, and 25 technical interview questions. |
+| **Comprehensive Report**| [`RESULTS.md`](RESULTS.md) | **Verified & Executed** | In-depth engineering documentation, NILM theory, and diagnostic visualizations. |
 | **User Run Guide** | [`README.md`](README.md) | **Verified & Executed** | Exact commands to run pipelines and view notebooks. |
