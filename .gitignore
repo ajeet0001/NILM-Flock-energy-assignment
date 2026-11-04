@@ -46,11 +46,14 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+.mplconfig/
+*/.mplconfig/*
 
 # Large dataset files (downloaded separately from official REFIT repository)
 data/raw/*.csv
 data/cleaned/*.csv
 outputs/cleaned/*.csv
+outputs/metrics/*.csv
 results/disaggregation_test_predictions.csv
 
 # Interview preparation (internal only)

@@ -1,0 +1,553 @@
+{
+  "report_generated_utc": "2026-11-04T09:24:01.572407+00:00",
+  "project_root": "D:\\NILM Flock energy assignment",
+  "dataset": "REFIT House 1 active power",
+  "units": "W",
+  "timestamp_basis": "Unix epoch seconds interpreted as UTC; Time strings parsed as naive UTC only for consistency checks.",
+  "documented_cadence_seconds": 8,
+  "file_selection_policy": "Part 1 rows strictly before the UTC minute containing Part 2's first Unix timestamp, then all Part 2 rows. Part 2 takes precedence throughout its temporal coverage because README identifies it as the later database iteration.",
+  "duplicate_policy": "Remove exact full-row duplicates; stable-sort by Unix then original row order; for each channel at a duplicate Unix timestamp, keep the last nonmissing value. This preserves channel values when Part 2 has separate sparse rows at the same second.",
+  "resampling_policy": "Mean of observed, timestamp-deduplicated readings within each UTC minute; empty minutes remain missing. This is observation-weighted, not a time-weighted reconstruction.",
+  "imputation_policy": "none",
+  "high_power_screen_w": 10000,
+  "house1_channel_mapping_documented": {
+    "Aggregate": "Whole-home aggregate",
+    "Appliance1": "Fridge",
+    "Appliance2": "Freezer(1)",
+    "Appliance3": "Freezer(2)",
+    "Appliance4": "Washer Dryer",
+    "Appliance5": "Washing Machine",
+    "Appliance6": "Dishwasher",
+    "Appliance7": "Computer",
+    "Appliance8": "Television Site",
+    "Appliance9": "Electric Heater"
+  },
+  "files": {
+    "RAW_House1_Part1.csv": {
+      "file": "RAW_House1_Part1.csv",
+      "path": "D:\\NILM Flock energy assignment\\data\\raw\\RAW_House1_Part1.csv",
+      "bytes": 243553211,
+      "format": "CSV",
+      "rows": 4377877,
+      "columns": [
+        "Time",
+        "Unix",
+        "Aggregate",
+        "Appliance1",
+        "Appliance2",
+        "Appliance3",
+        "Appliance4",
+        "Appliance5",
+        "Appliance6",
+        "Appliance7",
+        "Appliance8",
+        "Appliance9"
+      ],
+      "dtypes": {
+        "Time": "str",
+        "Unix": "int64",
+        "Aggregate": "int64",
+        "Appliance1": "int64",
+        "Appliance2": "int64",
+        "Appliance3": "int64",
+        "Appliance4": "int64",
+        "Appliance5": "int64",
+        "Appliance6": "int64",
+        "Appliance7": "int64",
+        "Appliance8": "int64",
+        "Appliance9": "int64"
+      },
+      "invalid_unix_timestamps": 0,
+      "invalid_time_strings": 0,
+      "time_unix_delta_seconds": {
+        "0.0": 2243876,
+        "1.0": 2134001
+      },
+      "time_unix_nonnull_mismatches": 2134001,
+      "row_order_unix_decreases": 1,
+      "row_order_unix_repeats": 1003950,
+      "exact_duplicate_rows": 595935,
+      "rows_at_duplicate_timestamps": 1833597,
+      "duplicate_timestamp_groups": 829193,
+      "conflicting_duplicate_timestamp_groups_by_channel": {
+        "Aggregate": 79519,
+        "Appliance1": 7799,
+        "Appliance2": 12284,
+        "Appliance3": 14863,
+        "Appliance4": 163,
+        "Appliance5": 1393,
+        "Appliance6": 516,
+        "Appliance7": 4663,
+        "Appliance8": 8912,
+        "Appliance9": 2818
+      },
+      "conflicting_duplicate_timestamp_groups_any_channel": 118191,
+      "raw_missing_by_channel": {
+        "Aggregate": 0,
+        "Appliance1": 0,
+        "Appliance2": 0,
+        "Appliance3": 0,
+        "Appliance4": 0,
+        "Appliance5": 0,
+        "Appliance6": 0,
+        "Appliance7": 0,
+        "Appliance8": 0,
+        "Appliance9": 0
+      },
+      "raw_zero_by_channel": {
+        "Aggregate": 12,
+        "Appliance1": 3325660,
+        "Appliance2": 2783673,
+        "Appliance3": 2624441,
+        "Appliance4": 4346080,
+        "Appliance5": 4284667,
+        "Appliance6": 4337526,
+        "Appliance7": 3970654,
+        "Appliance8": 3547878,
+        "Appliance9": 874
+      },
+      "raw_negative_by_channel": {
+        "Aggregate": 0,
+        "Appliance1": 0,
+        "Appliance2": 0,
+        "Appliance3": 0,
+        "Appliance4": 0,
+        "Appliance5": 0,
+        "Appliance6": 0,
+        "Appliance7": 0,
+        "Appliance8": 0,
+        "Appliance9": 0
+      },
+      "raw_over_10000_w_by_channel": {
+        "Aggregate": 10156,
+        "Appliance1": 101,
+        "Appliance2": 8,
+        "Appliance3": 7,
+        "Appliance4": 243,
+        "Appliance5": 6,
+        "Appliance6": 11,
+        "Appliance7": 3,
+        "Appliance8": 7,
+        "Appliance9": 14
+      },
+      "raw_min_by_channel": {
+        "Aggregate": 0.0,
+        "Appliance1": 0.0,
+        "Appliance2": 0.0,
+        "Appliance3": 0.0,
+        "Appliance4": 0.0,
+        "Appliance5": 0.0,
+        "Appliance6": 0.0,
+        "Appliance7": 0.0,
+        "Appliance8": 0.0,
+        "Appliance9": 0.0
+      },
+      "raw_max_by_channel": {
+        "Aggregate": 24000.0,
+        "Appliance1": 69629.0,
+        "Appliance2": 98301.0,
+        "Appliance3": 32751.0,
+        "Appliance4": 98301.0,
+        "Appliance5": 32767.0,
+        "Appliance6": 14336.0,
+        "Appliance7": 98299.0,
+        "Appliance8": 65549.0,
+        "Appliance9": 65535.0
+      },
+      "unix_min": 1381327577,
+      "unix_max": 1412126827,
+      "utc_min": "2013-10-09T14:06:17+00:00",
+      "utc_max": "2014-10-01T01:27:07+00:00",
+      "intervals": {
+        "unique_timestamps": 3373473,
+        "positive_intervals": 3373472,
+        "interval_quantiles_seconds": {
+          "0.01": 1.0,
+          "0.1": 2.0,
+          "0.25": 2.0,
+          "0.5": 7.0,
+          "0.75": 13.0,
+          "0.9": 15.0,
+          "0.99": 16.0,
+          "0.999": 24.0,
+          "1.0": 3594414.0
+        },
+        "intervals_over_8_seconds": 1634175,
+        "intervals_over_60_seconds": 781,
+        "intervals_over_1_hour": 14,
+        "largest_gap_seconds": 3594414
+      }
+    },
+    "RAW_House1_Part2.csv": {
+      "file": "RAW_House1_Part2.csv",
+      "path": "D:\\NILM Flock energy assignment\\data\\raw\\RAW_House1_Part2.csv",
+      "bytes": 239646944,
+      "format": "CSV",
+      "rows": 4140886,
+      "columns": [
+        "Time",
+        "Unix",
+        "Aggregate",
+        "Appliance1",
+        "Appliance2",
+        "Appliance3",
+        "Appliance4",
+        "Appliance5",
+        "Appliance6",
+        "Appliance7",
+        "Appliance8",
+        "Appliance9"
+      ],
+      "dtypes": {
+        "Time": "str",
+        "Unix": "int64",
+        "Aggregate": "float64",
+        "Appliance1": "float64",
+        "Appliance2": "float64",
+        "Appliance3": "float64",
+        "Appliance4": "float64",
+        "Appliance5": "float64",
+        "Appliance6": "float64",
+        "Appliance7": "float64",
+        "Appliance8": "float64",
+        "Appliance9": "float64"
+      },
+      "invalid_unix_timestamps": 0,
+      "invalid_time_strings": 0,
+      "time_unix_delta_seconds": {
+        "0.0": 2122044,
+        "1.0": 2018842
+      },
+      "time_unix_nonnull_mismatches": 2018842,
+      "row_order_unix_decreases": 0,
+      "row_order_unix_repeats": 14755,
+      "exact_duplicate_rows": 0,
+      "rows_at_duplicate_timestamps": 29510,
+      "duplicate_timestamp_groups": 14755,
+      "conflicting_duplicate_timestamp_groups_by_channel": {
+        "Aggregate": 13810,
+        "Appliance1": 13204,
+        "Appliance2": 13135,
+        "Appliance3": 13560,
+        "Appliance4": 13027,
+        "Appliance5": 13165,
+        "Appliance6": 13357,
+        "Appliance7": 13670,
+        "Appliance8": 13305,
+        "Appliance9": 10090
+      },
+      "conflicting_duplicate_timestamp_groups_any_channel": 14362,
+      "raw_missing_by_channel": {
+        "Aggregate": 188973,
+        "Appliance1": 437890,
+        "Appliance2": 459468,
+        "Appliance3": 311961,
+        "Appliance4": 510963,
+        "Appliance5": 497223,
+        "Appliance6": 342337,
+        "Appliance7": 232752,
+        "Appliance8": 390705,
+        "Appliance9": 1911811
+      },
+      "raw_zero_by_channel": {
+        "Aggregate": 0,
+        "Appliance1": 2818957,
+        "Appliance2": 2402721,
+        "Appliance3": 2242905,
+        "Appliance4": 3625381,
+        "Appliance5": 3559281,
+        "Appliance6": 3763375,
+        "Appliance7": 3427383,
+        "Appliance8": 3041301,
+        "Appliance9": 742
+      },
+      "raw_negative_by_channel": {
+        "Aggregate": 0,
+        "Appliance1": 0,
+        "Appliance2": 0,
+        "Appliance3": 0,
+        "Appliance4": 0,
+        "Appliance5": 0,
+        "Appliance6": 0,
+        "Appliance7": 0,
+        "Appliance8": 0,
+        "Appliance9": 0
+      },
+      "raw_over_10000_w_by_channel": {
+        "Aggregate": 10941,
+        "Appliance1": 96,
+        "Appliance2": 14,
+        "Appliance3": 40,
+        "Appliance4": 44,
+        "Appliance5": 31,
+        "Appliance6": 8,
+        "Appliance7": 56,
+        "Appliance8": 48,
+        "Appliance9": 4
+      },
+      "raw_min_by_channel": {
+        "Aggregate": 15.0,
+        "Appliance1": 0.0,
+        "Appliance2": 0.0,
+        "Appliance3": 0.0,
+        "Appliance4": 0.0,
+        "Appliance5": 0.0,
+        "Appliance6": 0.0,
+        "Appliance7": 0.0,
+        "Appliance8": 0.0,
+        "Appliance9": 0.0
+      },
+      "raw_max_by_channel": {
+        "Aggregate": 29159.0,
+        "Appliance1": 76677.0,
+        "Appliance2": 66685.0,
+        "Appliance3": 73725.0,
+        "Appliance4": 98301.0,
+        "Appliance5": 73725.0,
+        "Appliance6": 37610.0,
+        "Appliance7": 73725.0,
+        "Appliance8": 98301.0,
+        "Appliance9": 32737.0
+      },
+      "unix_min": 1403906269,
+      "unix_max": 1436529392,
+      "utc_min": "2014-06-27T21:57:49+00:00",
+      "utc_max": "2015-07-10T11:56:32+00:00",
+      "intervals": {
+        "unique_timestamps": 4126131,
+        "positive_intervals": 4126130,
+        "interval_quantiles_seconds": {
+          "0.01": 5.0,
+          "0.1": 6.0,
+          "0.25": 6.0,
+          "0.5": 7.0,
+          "0.75": 8.0,
+          "0.9": 8.0,
+          "0.99": 9.0,
+          "0.999": 24.0,
+          "1.0": 747251.0
+        },
+        "intervals_over_8_seconds": 355707,
+        "intervals_over_60_seconds": 3604,
+        "intervals_over_1_hour": 19,
+        "largest_gap_seconds": 747251
+      }
+    }
+  },
+  "overlap": {
+    "overlap_start_unix": 1403906269,
+    "overlap_end_unix": 1412126827,
+    "overlap_start_utc": "2014-06-27T21:57:49+00:00",
+    "overlap_end_utc": "2014-10-01T01:27:07+00:00",
+    "files": [
+      {
+        "file": "RAW_House1_Part1.csv",
+        "overlap_rows": 1257865,
+        "grouped_unique_timestamps": 835888
+      },
+      {
+        "file": "RAW_House1_Part2.csv",
+        "overlap_rows": 945403,
+        "grouped_unique_timestamps": 942783
+      }
+    ],
+    "unique_timestamp_merge_counts": {
+      "both": 191889,
+      "left_only": 643999,
+      "right_only": 750894
+    },
+    "shared_unique_timestamps": 191889,
+    "shared_with_aggregate_values_in_both": 181255,
+    "matching_aggregate_min_max_groups": 36988,
+    "conflicting_aggregate_min_max_groups": 144267
+  },
+  "cleaning": {
+    "part1": {
+      "file": "RAW_House1_Part1.csv",
+      "rows_considered_for_cleaning": 3120004,
+      "invalid_unix_rows_excluded": 0,
+      "exact_duplicate_rows_removed": 321692,
+      "rows_removed_by_timestamp_resolution": 260732,
+      "unique_timestamps_after_resolution": 2537580,
+      "duplicate_example_unix": 1399347354,
+      "duplicate_example_count": 5,
+      "minute_bins": 376311
+    },
+    "part2": {
+      "file": "RAW_House1_Part2.csv",
+      "rows_considered_for_cleaning": 4140886,
+      "invalid_unix_rows_excluded": 0,
+      "exact_duplicate_rows_removed": 0,
+      "rows_removed_by_timestamp_resolution": 14755,
+      "unique_timestamps_after_resolution": 4126131,
+      "duplicate_example_unix": 1403906657,
+      "duplicate_example_count": 2,
+      "minute_bins": 543720
+    },
+    "output_csv": "outputs\\cleaned\\CLEAN_House1_1min.csv",
+    "raw_rows_considered": 7260890,
+    "cleaned_minutes": {
+      "output_rows": 920031,
+      "utc_start": "2013-10-09T14:06:00+00:00",
+      "utc_end": "2015-07-10T11:56:00+00:00",
+      "minute_bins_with_aggregate": 800351,
+      "full_grid_missing_aggregate_bins": 119680,
+      "per_channel_missing_bins": {
+        "Aggregate": 119680,
+        "Appliance1": 123730,
+        "Appliance2": 123473,
+        "Appliance3": 121143,
+        "Appliance4": 132757,
+        "Appliance5": 129681,
+        "Appliance6": 120560,
+        "Appliance7": 119674,
+        "Appliance8": 121879,
+        "Appliance9": 338427
+      },
+      "per_channel_imputed_bins": {
+        "Aggregate": 0,
+        "Appliance1": 0,
+        "Appliance2": 0,
+        "Appliance3": 0,
+        "Appliance4": 0,
+        "Appliance5": 0,
+        "Appliance6": 0,
+        "Appliance7": 0,
+        "Appliance8": 0,
+        "Appliance9": 0
+      },
+      "per_channel_negative_bins": {
+        "Aggregate": 0,
+        "Appliance1": 0,
+        "Appliance2": 0,
+        "Appliance3": 0,
+        "Appliance4": 0,
+        "Appliance5": 0,
+        "Appliance6": 0,
+        "Appliance7": 0,
+        "Appliance8": 0,
+        "Appliance9": 0
+      },
+      "missing_runs": {
+        "Aggregate": {
+          "missing_bins": 119680,
+          "missing_runs": 1018,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance1": {
+          "missing_bins": 123730,
+          "missing_runs": 2205,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance2": {
+          "missing_bins": 123473,
+          "missing_runs": 2029,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance3": {
+          "missing_bins": 121143,
+          "missing_runs": 1057,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance4": {
+          "missing_bins": 132757,
+          "missing_runs": 2706,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance5": {
+          "missing_bins": 129681,
+          "missing_runs": 2887,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance6": {
+          "missing_bins": 120560,
+          "missing_runs": 966,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance7": {
+          "missing_bins": 119674,
+          "missing_runs": 1018,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance8": {
+          "missing_bins": 121879,
+          "missing_runs": 1679,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        },
+        "Appliance9": {
+          "missing_bins": 338427,
+          "missing_runs": 1734,
+          "longest_run_minutes": 59906,
+          "longest_run_start_utc": "2014-01-24T01:57:00+00:00",
+          "longest_run_end_utc": "2014-03-06T16:22:00+00:00"
+        }
+      },
+      "max_resampled_value_w_by_channel": {
+        "Aggregate": 23965.75,
+        "Appliance1": 65549.0,
+        "Appliance2": 19660.2,
+        "Appliance3": 13247.4,
+        "Appliance4": 98301.0,
+        "Appliance5": 22185.666666666668,
+        "Appliance6": 5376.0,
+        "Appliance7": 73725.0,
+        "Appliance8": 40978.125,
+        "Appliance9": 16384.5
+      },
+      "sum_appliances_comparison": {
+        "complete_channel_minutes": 576424,
+        "median_appliance_sum_minus_aggregate_w": -159.42857142857144,
+        "mean_absolute_difference_w": 354.250136223949,
+        "aggregate_and_appliance_sum_exactly_equal_minutes": 1
+      }
+    }
+  },
+  "figures": {
+    "before_after": "outputs\\figures\\house1_before_after_1min.png",
+    "longest_gap": "outputs\\figures\\house1_longest_gap.png",
+    "duplicate_window": "outputs\\figures\\house1_duplicate_timestamp_window.png",
+    "sampling_missingness": "outputs\\figures\\house1_sampling_and_missingness.png"
+  },
+  "official_cleaned_reference": {
+    "path": "data/cleaned/CLEAN_House1.csv",
+    "not_modified": true,
+    "observed_header": [
+      "Time",
+      "Unix",
+      "Aggregate",
+      "Appliance1",
+      "Appliance2",
+      "Appliance3",
+      "Appliance4",
+      "Appliance5",
+      "Appliance6",
+      "Appliance7",
+      "Appliance8",
+      "Appliance9",
+      "Issues"
+    ]
+  },
+  "environment": {
+    "python": "3.11.9",
+    "pandas": "3.1.0",
+    "numpy": "2.4.6"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "input_files": [
+    "data\\raw\\RAW_House1_Part1.csv",
+    "data\\raw\\RAW_House1_Part2.csv"
+  ],
+  "output_file": "outputs\\cleaned\\CLEAN_House1_1min.csv",
+  "resample_rule": "1min",
+  "resample_aggregation": "mean of observed values per UTC minute",
+  "imputation": "none",
+  "high_power_screen_w": 10000,
+  "part1_exclusive_end_unix": 1403906220,
+  "duplicate_rule": "Remove exact full-row duplicates; stable-sort by Unix then original row order; for each channel at a duplicate Unix timestamp, keep the last nonmissing value. This preserves channel values when Part 2 has separate sparse rows at the same second."
+}
