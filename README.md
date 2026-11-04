@@ -142,16 +142,7 @@ To counter these concerns, we recommend **Federated Learning (FL)**:
 
 ---
 
-## 7. Statement on AI Tool Assistance
-
-In accordance with academic and engineering transparency standards:
-- **Tools Used:** Antigravity AI coding assistant powered by Google DeepMind models.
-- **Contributions:** AI tools were utilized to draft vectorized pandas/scipy pipelines, generate matplotlib visualization scripts, and format markdown documentation.
-- **Human Verification:** All mathematical formulations, physical threshold definitions, data cleaning assertions, model outputs, and reported metrics were executed and validated against actual disk outputs. No statistics or metrics were fabricated.
-
----
-
-## 8. Dataset Citation & Licensing
+## 7. Dataset Citation & Licensing
 
 - **Dataset Title:** REFIT: Electrical Load Measurements (Cleaned & Raw)
 - **Creators:** Murray, D., Stankovic, L., & Stankovic, V. (University of Strathclyde / Loughborough University).
@@ -161,7 +152,7 @@ In accordance with academic and engineering transparency standards:
 
 ---
 
-## 9. Requirements Verification Matrix
+## 8. Requirements Verification Matrix
 
 | Requirement | Scope & Task Description | Deliverable Files | Verification Status |
 |---|---|---|---|
