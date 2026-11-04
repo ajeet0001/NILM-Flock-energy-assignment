@@ -1,16 +1,9 @@
-dataset,test_category,check_name,measured_value,status_severity,interpretation,mitigation_action
-RAW_House1_Part1.csv,Inventory,Rows and File Size,"4,377,877 rows; 243,553,211 bytes",PASS,Raw CSV inventory matches expected disk footprint.,Raw file preserved strictly read-only.
-RAW_House1_Part1.csv,Timestamps,Timestamp Parsing,"Unix invalid=0, Time invalid=0",PASS,All Unix epoch seconds and Time strings parse without corruption.,Unix epoch seconds used as canonical UTC instant.
-RAW_House1_Part1.csv,Duplicates,Duplicate Timestamps,"829,193 duplicate groups; 118,191 conflicting",WARNING,Timestamp is not a unique row key in the raw database export.,Exact duplicate rows removed; conflicting records resolved with last non-missing value.
-RAW_House1_Part1.csv,Integrity,Negative Active Power,0,PASS,Zero negative power readings observed across all channels.,No clipping or negative clamping needed.
-RAW_House1_Part1.csv,Plausibility,Readings Above 10 kW,"10,556 readings > 10 kW",REVIEW,Large transient spikes exist on aggregate and heavy appliances.,Retained unchanged; legitimate power peaks not arbitrarily deleted.
-RAW_House1_Part2.csv,Inventory,Rows and File Size,"4,140,886 rows; 239,646,944 bytes",PASS,Raw CSV inventory matches expected disk footprint.,Raw file preserved strictly read-only.
-RAW_House1_Part2.csv,Timestamps,Timestamp Parsing,"Unix invalid=0, Time invalid=0",PASS,All Unix epoch seconds and Time strings parse without corruption.,Unix epoch seconds used as canonical UTC instant.
-RAW_House1_Part2.csv,Duplicates,Duplicate Timestamps,"14,755 duplicate groups; 14,362 conflicting",WARNING,Timestamp is not a unique row key in the raw database export.,Exact duplicate rows removed; conflicting records resolved with last non-missing value.
-RAW_House1_Part2.csv,Integrity,Negative Active Power,0,PASS,Zero negative power readings observed across all channels.,No clipping or negative clamping needed.
-RAW_House1_Part2.csv,Plausibility,Readings Above 10 kW,"11,282 readings > 10 kW",REVIEW,Large transient spikes exist on aggregate and heavy appliances.,Retained unchanged; legitimate power peaks not arbitrarily deleted.
-Part1_Part2_Overlap,Partitioning,Overlap Window Coverage,"2014-06-27T21:57:49+00:00 to 2014-10-01T01:27:07+00:00 (1,257,865 P1 rows, 945,403 P2 rows)",WARNING,Part 1 and Part 2 overlap for over 3 months; not consecutive partitions.,Part 2 given authoritative precedence; Part 1 used strictly before Part 2 start.
-Part1_Part2_Overlap,Consistency,Shared Timestamp Conflict Rate,75.2% conflicting aggregate readings,CRITICAL,Over 75% of overlapping timestamps disagree between Part 1 and Part 2.,Never blindly merge Part 1 and Part 2; discard overlapping Part 1 records.
-CLEAN_House1_1min.csv,Grid,Consecutive 1-Minute Grid,"920,031 continuous minutes (start=2013-10-09T14:06:00+00:00, end=2015-07-10T11:56:00+00:00)",PASS,"Complete, strictly regular 60-second temporal grid without missing index timestamps.",Verified via assertion np.diff(Unix) == 60.
-CLEAN_House1_1min.csv,Missingness,Missing Data Preservation,"Aggregate missing: 119,063 bins (12.94%)",PASS,True outages (including 41-day Feb 2014 outage) preserved as NaNs.,"Unknown readings preserved as NaNs, not converted to zeros."
-CLEAN_House1_1min.csv,Imputation,Short Gap Bounded Imputation,Aggregate imputed: 617 bins,PASS,Only justified short gaps <= 2 minutes filled; flagged with Aggregate_was_imputed=True.,Full traceability maintained via boolean mask columns.
+Check,Status,Finding
+Timestamp Parsing,PASS,"All 8,518,763 Unix seconds parse cleanly into UTC instants without errors."
+Chronological Ordering,PASS,Both raw files are strictly monotonic increasing with zero backward time jumps.
+Duplicate Timestamps,WARN,"Found 1,004,404 (P1) and 14,755 (P2) repeated Unix seconds; require deterministic resolution."
+Sampling Cadence,INFO,Asynchronous event-based sampling with median delta_t of 6.0s (P1) and 8.0s (P2).
+Extended Outages,WARN,Major 41.6-day outage in Feb 2014 (41.6 days); must be flagged rather than filled.
+Negative Power,PASS,Zero negative values across all channels (min = 0.0 W); passive domestic circuit preserved.
+Extreme Values (>10kW),INFO,"21,097 brief aggregate readings exceed 10 kW; legitimate motor/heating surges."
+File Overlap Conflict,CRITICAL,95-day overlap where 75.18% of shared timestamps disagree; Part 2 takes authoritative precedence.

@@ -1,7 +1,5 @@
 # REFIT Washing-Machine Usage Analysis: Cross-Household Disaggregation EDA
 
-**Flock Energy NILM Appliance Disaggregation Platform**  
-**Senior Energy-Data Scientist Evaluation Report**  
 **Dataset:** Official Cleaned REFIT Electrical Load Measurements (`data/cleaned/CLEAN_House*.csv`)  
 **Cadence:** 1-Minute Resampled Grid  
 **Analysed Households:** House 1, House 2, House 3, House 5, and House 20 (covering detached, semi-detached, and mid-terrace homes with 2 to 4 occupants).
