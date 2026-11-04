@@ -2,7 +2,6 @@
 ## Multi-Household Washing Machine Characterization & Predictive Disaggregation on REFIT Smart Home Data
 
 **Flock Energy NILM Appliance Disaggregation Platform**  
-**Author:** Senior Machine Learning & Energy-Data Engineer  
 **Dataset:** REFIT: Electrical Load Measurements (Cleaned & Raw, Loughborough University / University of Strathclyde)  
 **License:** Creative Commons Attribution 4.0 International (CC BY 4.0)  
 
@@ -10,12 +9,24 @@
 
 ## 1. Project Overview & System Architecture
 
-This repository delivers an end-to-end, reproducible data-engineering and machine-learning solution for Non-Intrusive Load Monitoring (NILM), focusing on residential washing machines. The project spans four interconnected requirements:
+This repository delivers an end-to-end, reproducible data-engineering and machine-learning solution for Non-Intrusive Load Monitoring (NILM), focusing on residential washing machines. The project is organized into three self-contained executable Jupyter notebooks and four core documentation deliverables:
 
-1. **Requirement 1 — Raw Data Discovery, Cleaning & Auditing (House 1):** Ingests asynchronous, event-driven raw current-clamp and plug-level IAM data (~8.5M rows), resolves Part 1 vs. Part 2 file overlaps, executes deterministic timestamp deduplication, resamples to a regular 1-minute UTC grid, and applies bounded short-gap interpolation while strictly preserving extended outages.
-2. **Requirement 2 — Multi-Household Washing Machine EDA (Houses 1, 2, 3, 5, 20):** Audits 3,004 days of monitoring data, establishes physics-informed cycle detection ($P \ge 20\text{ W}$, $D \ge 15\text{ min}$, $G \le 3\text{ min}$), extracts 2,509 verified cycles, and quantifies duration, peak power, energy, and diurnal flexibility across detached, semi-detached, and terraced dwellings.
-3. **Requirement 3 — Predictive Disaggregation Modeling (GBDT):** Formulates continuous active-power disaggregation as a supervised regression task. Evaluates an engineered Histogram Gradient Boosting Regressor against an Always-Off Baseline and a Heuristic Threshold Baseline across chronological holdout (House 1) and cross-household zero-shot transfer (Houses 2 & 3 $\rightarrow$ House 1).
-4. **Requirement 4 — Utility Strategy & Commercialization (`Recommendation.md`):** Formulates a utility-facing pilot specification for voluntary peak-to-solar laundry shifting, assesses sampling degradation at 15-minute and 30-minute smart-meter cadences, analyzes UK-to-India transferability, and specifies pilot governance gates.
+1. **Requirement 1 — Raw Data Discovery, Cleaning & Auditing (`notebooks/01_data_cleaning.ipynb`):**
+   - Ingests asynchronous raw current-clamp and plug-level IAM data (~8.5M rows).
+   - Resolves Part 1 vs. Part 2 file overlaps (75.18% conflict rate) with a deterministic switchover at Unix second `1403906220`.
+   - Resamples to a regular 1-minute UTC grid and applies bounded short-gap interpolation ($\le 2$ min) while preserving extended outages (59,906 min in Feb 2014).
+2. **Requirement 2 — Multi-Household Washing Machine EDA (`notebooks/02_washing_machine_eda.ipynb`):**
+   - Audits 3,004 days of monitoring data across Houses 1, 2, 3, 5, and 20.
+   - Formulates physics-grounded cycle detection ($P \ge 20\text{ W}$, $D \ge 15\text{ min}$, $G \le 3\text{ min}$), isolating 3 W standby load in House 5 and preventing 41.3% cycle fragmentation.
+   - Extracts 2,509 verified cycles and evaluates 35 sensitivity grid scenarios across diverse housing types.
+3. **Requirement 3 — Predictive Disaggregation Modeling (`notebooks/03_disaggregation_model.ipynb`):**
+   - Formulates continuous active-power disaggregation as supervised regression using a Histogram Gradient Boosting Regressor (`HistGradientBoostingRegressor`).
+   - Uses 21 engineered temporal window features ($[-15, +15]$ min context, rolling statistics, calendar harmonics).
+   - Evaluates performance against Always-Off and Heuristic Threshold baselines under strict chronological holdout (House 1) and cross-household domain generalization (Houses 2 & 3 $\rightarrow$ House 1).
+4. **Requirement 4 — Utility Strategy, Load Management & Privacy (`Recommendation.md`):**
+   - Specifies a commercial utility pilot for residential distribution load management and peak-to-solar laundry shifting.
+   - Evaluates smart-meter sampling degradation under 15-minute and 30-minute utility AMI intervals.
+   - Addresses high-frequency data privacy risks and recommends **Federated Learning (FL)** to enable on-device decentralized model training without centralizing sensitive household telemetry.
 
 ---
 
@@ -25,35 +36,25 @@ This repository delivers an end-to-end, reproducible data-engineering and machin
 .
 ├── configs/
 │   └── config.yaml                     # Centralized pipeline configuration & parameters
-├── data/
-│   ├── cleaned/                        # Official cleaned REFIT dataset (CLEAN_House1.csv to CLEAN_House21.csv)
-│   └── raw/                            # Raw asynchronous REFIT files (RAW_House1_Part1/Part2.csv)
-├── docs/                               # Documentation assets
+├── data/                               # Excluded from git via .gitignore (large raw/cleaned CSVs)
 ├── notebooks/
-│   ├── 01_data_cleaning.ipynb          # Requirement 1: Raw data audit & cleaning walkthrough
-│   ├── washing_machine_eda.ipynb       # Requirement 2: 5-house washing machine cycle analysis
-│   └── disaggregation_model.ipynb      # Requirement 3: Machine learning disaggregation & benchmarking
+│   ├── 01_data_cleaning.ipynb          # Requirement 1: Self-contained raw data audit & cleaning
+│   ├── 02_washing_machine_eda.ipynb    # Requirement 2: Self-contained multi-house cycle EDA
+│   └── 03_disaggregation_model.ipynb   # Requirement 3: Self-contained ML model & benchmark
 ├── outputs/
-│   ├── cleaned/
-│   │   └── CLEAN_House1_1min.csv       # Cleaned 1-minute House 1 dataset with imputation flags
 │   ├── figures/                        # Requirement 1 diagnostic plots
 │   └── tables/                         # Requirement 1 quality audit & cleaning summary CSVs
 ├── results/
 │   ├── disaggregation_metrics.json     # Machine-readable disaggregation evaluation metrics
-│   ├── disaggregation_test_predictions.csv # 201,683 held-out test predictions & ground truth
 │   ├── household_washing_machine_summary.csv # Cross-household EDA summary table
 │   ├── washing_machine_cycles.csv      # 2,509 detected cycle events with duration, peak, energy
 │   ├── washing_machine_sensitivity.csv # Sensitivity analysis grid (35 scenario runs)
-│   ├── figures/                        # Deliverable figures for Requirements 2 & 3
-│   └── tables/                         # Generated CSV metrics and benchmark tables
-├── src/
-│   ├── clean_raw_data.py               # Requirement 1: Production cleaning pipeline script
-│   ├── washing_machine_eda.py          # Requirement 2: Multi-household cycle detection & EDA
-│   └── disaggregation_model.py         # Requirement 3: Feature engineering, GBDT model & evaluation
+│   ├── figures/                        # Publication figures for Requirements 2 & 3
+│   └── tables/                         # Benchmark metrics and summary tables
 ├── .gitignore                          # Git exclusion rules (prevents committing multi-GB CSVs)
 ├── DATA.md                             # Requirement 1 empirical data audit & provenance report
 ├── README.md                           # Master repository documentation & run instructions
-├── Recommendation.md                   # Requirement 4: One-page executive utility brief
+├── Recommendation.md                   # Requirement 4: One-page executive utility brief & Section 4 answers
 ├── requirements.txt                    # Pinned Python package dependencies (UTF-8)
 └── RESULTS.md                          # Full empirical results, figures & benchmark analysis
 ```
@@ -62,7 +63,7 @@ This repository delivers an end-to-end, reproducible data-engineering and machin
 
 ## 3. Environment Setup & Dependency Installation
 
-The codebase requires **Python 3.11** (compatible with 3.10+).
+The project requires **Python 3.11** (compatible with 3.10+):
 
 ```powershell
 # 1. Create and activate a Python virtual environment
@@ -85,45 +86,19 @@ pip install -r requirements.txt
 
 ---
 
-## 4. End-to-End Pipeline Execution
+## 4. Execution via Self-Contained Notebooks
 
-All pipelines are fully automated and run from the repository root:
+Each notebook in `notebooks/` is **100% self-contained**, embedding its own data loading, feature extraction, and evaluation logic. Launch them directly in Jupyter:
 
-### Step 1: Execute Raw House 1 Cleaning (Requirement 1)
 ```powershell
-python src/clean_raw_data.py --config configs/config.yaml
-```
-- Ingests `data/raw/RAW_House1_Part1.csv` and `Part2.csv`.
-- Generates `outputs/cleaned/CLEAN_House1_1min.csv` (920,031 bins).
-- Exports `outputs/tables/cleaning_quality_report.csv` and `cleaning_summary.csv`.
-- Generates four diagnostic figures in `outputs/figures/`.
+# Launch Jupyter Notebook server
+python -m jupyter notebook
 
-### Step 2: Execute Multi-Household Washing Machine EDA (Requirement 2)
-```powershell
-python src/washing_machine_eda.py
+# Or execute any notebook headlessly via nbconvert:
+jupyter nbconvert --to notebook --execute notebooks/01_data_cleaning.ipynb --inplace
+jupyter nbconvert --to notebook --execute notebooks/02_washing_machine_eda.ipynb --inplace
+jupyter nbconvert --to notebook --execute notebooks/03_disaggregation_model.ipynb --inplace
 ```
-- Processes official cleaned files for Houses 1, 2, 3, 5, and 20.
-- Extracts 2,509 cycle events and evaluates 35 sensitivity grid scenarios.
-- Exports `results/washing_machine_cycles.csv`, `household_washing_machine_summary.csv`, and `washing_machine_sensitivity.csv`.
-- Generates six publication figures in `results/figures/`.
-
-### Step 3: Train & Benchmark Disaggregation Model (Requirement 3)
-```powershell
-python src/disaggregation_model.py
-```
-- Fits `HistGradientBoostingRegressor` on House 1 (75% chronological train) and benchmarks on held-out test data (25%, 201,683 rows).
-- Fits cross-household generalization model on Houses 2 & 3 and evaluates on 100% unseen House 1 (806,732 rows).
-- Evaluates Always-Off and Heuristic Threshold baselines.
-- Exports `results/disaggregation_test_predictions.csv`, `results/tables/disaggregation_metrics.csv`, and `disaggregation_metrics.json`.
-- Generates four diagnostic error and trace figures in `results/figures/`.
-
-### Step 4: Run Interactive Walkthrough Notebooks
-```powershell
-python -m jupyter notebook notebooks/01_data_cleaning.ipynb
-python -m jupyter notebook notebooks/washing_machine_eda.ipynb
-python -m jupyter notebook notebooks/disaggregation_model.ipynb
-```
-*(Direct root copies are also provided at `washing_machine_eda.ipynb` and `disaggregation_model.ipynb`).*
 
 ---
 
@@ -150,16 +125,20 @@ python -m jupyter notebook notebooks/disaggregation_model.ipynb
 
 ---
 
-## 6. Engineering Trade-Offs & Strategic Limitations
+## 6. Strategic Use Cases & Privacy Governance
 
-1. **Class Imbalance & Precision Ceiling:** Because washing machines operate for $< 2\%$ of the year, even a low 2% false-positive rate from concurrent cooking or heating appliances caps 1-minute precision at ~28%. Nudges must be delivered as informational prompts rather than hard automated control.
-2. **Sampling Degradation at 15-Minute / 30-Minute Cadence:** 
-   Standard utility smart meters record at 15-minute or 30-minute intervals. Averaging 1-minute power over 30 minutes dilutes a 20-minute, 2,300 W water-heating surge into an average plateau of ~760 W or ~380 W. This obscures rapid motor agitation pulses, blends the load into background baseload, and softens cycle start/end boundaries. However, total energy disaggregation over multi-hour windows remains feasible via regularized regression.
-3. **UK-to-India Transferability Constraints:**
-   - *Internal Heaters:* UK machines incorporate internal 2 kW resistive water heaters. Typical Indian washing machines are cold-fill top-loaders drawing 200–400 W for motor agitation alone, lacking the prominent 2 kW signature.
-   - *Power Quality & Backup Systems:* Voltage fluctuations (180–260 V), frequent outages, and unmonitored inverter-battery systems in India corrupt aggregate profile consistency.
-   - *AMI Rollout:* Indian smart meters under RDSS operate primarily on 15-minute head-end unit pushes rather than 1-minute telemetry.
-4. **Data Privacy & Ethical Governance:** Granular appliance disaggregation reveals occupancy, wake/sleep schedules, and personal routines. Deployments must enforce GDPR / DPDP informed consent, local edge computation, and strict telemetry minimisation.
+### 1. Residential Load Management Use Case
+Domestic washing machines draw 1,900 W – 2,400 W during water heating. While individual washing cycles cannot be reduced in thermodynamic work without altering wash temperature, they offer substantial **discretionary load shifting flexibility**. By targeting the 62.4% of households currently running laundry during daytime hours, utilities can implement automated or nudged demand response:
+- Shifting laundry away from the 16:30–19:30 distribution peak relieves local substation transformer stress and defers capital grid reinforcement.
+- Aligning laundry with midday rooftop solar surplus (10:00–14:00) maximizes self-consumption and reduces wholesale imbalance costs.
+
+### 2. Privacy Concerns & Federated Learning Countermeasure
+High-frequency smart-meter data reveals granular behavioral habits (wake/sleep times, occupancy, meal preparation). Centralizing 1-minute household traces poses severe GDPR/DPDP regulatory and cyber-security risks.
+
+To counter these concerns, we recommend **Federated Learning (FL)**:
+- **Decentralized Edge Training:** NILM disaggregation models are trained locally on edge devices (smart meter gateways or Home Assistant hubs).
+- **Federated Averaging (FedAvg):** Only encrypted mathematical model gradient updates are transmitted to the central utility server; **raw power readings and behavioral profiles never leave the home**.
+- **Differential Privacy:** Noise injection during global model aggregation ensures mathematical privacy guarantees against reverse-engineering attacks.
 
 ---
 
@@ -167,7 +146,7 @@ python -m jupyter notebook notebooks/disaggregation_model.ipynb
 
 In accordance with academic and engineering transparency standards:
 - **Tools Used:** Antigravity AI coding assistant powered by Google DeepMind models.
-- **Contributions:** AI tools were utilized to draft vectorized pandas/scipy pipelines, generate matplotlib visualization scripts, format markdown documentation.
+- **Contributions:** AI tools were utilized to draft vectorized pandas/scipy pipelines, generate matplotlib visualization scripts, and format markdown documentation.
 - **Human Verification:** All mathematical formulations, physical threshold definitions, data cleaning assertions, model outputs, and reported metrics were executed and validated against actual disk outputs. No statistics or metrics were fabricated.
 
 ---
@@ -184,9 +163,9 @@ In accordance with academic and engineering transparency standards:
 
 ## 9. Requirements Verification Matrix
 
-| Requirement | Scope & Task Description | Deliverable Files | Measured Verification Status |
+| Requirement | Scope & Task Description | Deliverable Files | Verification Status |
 |---|---|---|---|
-| **Requirement 1** | Raw House 1 data audit, Part 1 vs Part 2 overlap reconciliation, 1-min resampling, bounded gap filling, quality assertions. | `src/clean_raw_data.py`, `01_data_cleaning.ipynb`, `DATA.md`, `CLEAN_House1_1min.csv`, 4 figures, 2 tables | **PASSED & VERIFIED** (920,031 bins produced; 59.9k min outage preserved). |
-| **Requirement 2** | Multi-household washing machine EDA (Houses 1, 2, 3, 5, 20), physical cycle detection, sensitivity analysis, temporal profiling. | `src/washing_machine_eda.py`, `washing_machine_eda.ipynb`, `washing_machine_cycles.csv`, `household_washing_machine_summary.csv`, 6 figures | **PASSED & VERIFIED** (2,509 cycles detected; 35 sensitivity grid runs verified). |
-| **Requirement 3** | Continuous supervised disaggregation modeling, window feature extraction, Always-Off and Heuristic baselines, GBDT model. | `src/disaggregation_model.py`, `disaggregation_model.ipynb`, `disaggregation_metrics.csv`, `disaggregation_test_predictions.csv`, 4 figures | **PASSED & VERIFIED** (30.9% RMSE reduction; 85.5% recall; 12.55% energy error). |
-| **Requirement 4** | Utility strategy specification, 15/30-min sampling analysis, UK-to-India transferability, repository audit, interview Q&A. | `Recommendation.md`, `README.md`, `RESULTS.md`, `interview_prep/technical_interview_qa.md` | **PASSED & VERIFIED** (One-page executive brief; 25 technical interview questions). |
+| **Requirement 1** | Raw House 1 data audit, Part 1 vs Part 2 overlap reconciliation, 1-min resampling, bounded gap filling, quality assertions. | `notebooks/01_data_cleaning.ipynb`, `DATA.md`, `CLEAN_House1_1min.csv`, 4 figures, 2 tables | **PASSED & VERIFIED** (920,031 bins produced; 59.9k min outage preserved). |
+| **Requirement 2** | Multi-household washing machine EDA (Houses 1, 2, 3, 5, 20), physical cycle detection, sensitivity analysis, temporal profiling. | `notebooks/02_washing_machine_eda.ipynb`, `RESULTS.md`, `washing_machine_cycles.csv`, `household_washing_machine_summary.csv`, 6 figures | **PASSED & VERIFIED** (2,509 cycles detected; 35 sensitivity grid runs verified). |
+| **Requirement 3** | Continuous supervised disaggregation modeling, window feature extraction, Always-Off and Heuristic baselines, GBDT model. | `notebooks/03_disaggregation_model.ipynb`, `RESULTS.md`, `disaggregation_metrics.csv`, 4 figures | **PASSED & VERIFIED** (30.9% RMSE reduction; 85.5% recall; 12.55% energy error). |
+| **Requirement 4** | Utility strategy specification, Load Management use case, Federated Learning privacy countermeasure, 15/30-min sampling analysis. | `Recommendation.md`, `README.md`, `RESULTS.md` | **PASSED & VERIFIED** (One-page executive brief, pilot spec & Section 4 answers). |

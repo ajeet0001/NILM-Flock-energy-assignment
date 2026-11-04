@@ -177,8 +177,7 @@ All files have been generated, executed, and validated in the workspace:
 
 | Category | Deliverable File | Verification Status |
 |---|---|---|
-| **Pipeline Script** | [`src/washing_machine_eda.py`](src/washing_machine_eda.py) | Verified: Executable CLI script with logging and integrity assertions. |
-| **Interactive Notebook**| [`notebooks/washing_machine_eda.ipynb`](notebooks/washing_machine_eda.ipynb) | Verified: Executed via `nbconvert` (798 KB, all outputs rendered). |
+| **Interactive Notebook**| [`notebooks/02_washing_machine_eda.ipynb`](notebooks/02_washing_machine_eda.ipynb) | Verified: Executed via `nbconvert` (798 KB, all outputs rendered). |
 | **Root Notebook Copy** | [`washing_machine_eda.ipynb`](washing_machine_eda.ipynb) | Verified: Root copy for seamless discoverability. |
 | **Cycle Event Table** | [`results/washing_machine_cycles.csv`](results/washing_machine_cycles.csv) | Verified: 2,509 cycle rows with timestamps, duration, peak, and energy. |
 | **Household Summary** | [`results/household_washing_machine_summary.csv`](results/household_washing_machine_summary.csv) | Verified: Demographics, coverage, zeros, standby %, and cycle metrics. |
@@ -198,7 +197,7 @@ All files have been generated, executed, and validated in the workspace:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
-python src/washing_machine_eda.py
+python -m jupyter notebook notebooks/02_washing_machine_eda.ipynb
 ```
 
 
@@ -376,8 +375,7 @@ The pipeline generated four deliverable diagnostic figures in `results/figures/`
 
 | Deliverable Item | File Location | Status | Empirical Validation Summary |
 |---|---|---|---|
-| **Disaggregation Script** | [`src/disaggregation_model.py`](src/disaggregation_model.py) | **Verified & Executed** | Modular, reproducible Python pipeline with chronological & cross-household validation. |
-| **Executable Notebook** | [`notebooks/disaggregation_model.ipynb`](notebooks/disaggregation_model.ipynb) | **Verified & Executed** | Fully executed via `nbconvert` (173 KB, code & markdown outputs populated). |
+| **Executable Notebook** | [`notebooks/03_disaggregation_model.ipynb`](notebooks/03_disaggregation_model.ipynb) | **Verified & Executed** | Fully executed via `nbconvert` (173 KB, code & markdown outputs populated). |
 | **Root Notebook Copy** | [`disaggregation_model.ipynb`](disaggregation_model.ipynb) | **Verified & Executed** | Root copy for convenient user execution. |
 | **Predictions CSV** | [`results/disaggregation_test_predictions.csv`](results/disaggregation_test_predictions.csv) | **Verified & Executed** | 201,683 test rows containing timestamps, aggregate, ground truth, and predicted traces. |
 | **Metrics Summary CSV** | [`results/tables/disaggregation_metrics.csv`](results/tables/disaggregation_metrics.csv) | **Verified & Executed** | Comparative metrics across Always-Off, Heuristic, and GBDT models. |

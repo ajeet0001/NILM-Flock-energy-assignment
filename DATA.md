@@ -32,7 +32,7 @@ flagged for investigation but retained.
 ### Evidence labels
 
 - **Measured:** computed from files in this workspace by
-  `src/clean_house1.py` or a stated scan of the existing cleaned reference.
+  `notebooks/01_data_cleaning.ipynb` or a stated scan of the existing cleaned reference.
 - **Documented:** stated in `data/raw/raw_readme.txt`.
 - **Assumed:** a pipeline interpretation needed where the source has no
   unambiguous metadata.
@@ -238,8 +238,7 @@ cleaning output.
 
 ### Requirement 1 Deliverable Files
 
-1. **Pipeline Script:** [`src/clean_raw_data.py`](src/clean_raw_data.py) — Configurable end-to-end cleaning and validation script.
-2. **Jupyter Walkthrough:** [`notebooks/01_data_cleaning.ipynb`](notebooks/01_data_cleaning.ipynb) — Executed notebook documenting audits, overlap analysis, and before/after plots.
+1. **Jupyter Walkthrough:** [`notebooks/01_data_cleaning.ipynb`](notebooks/01_data_cleaning.ipynb) — Executed notebook documenting audits, overlap analysis, and before/after plots.
 3. **Data Documentation:** [`DATA.md`](DATA.md) — Comprehensive data dictionary, provenance, decisions, and audit report.
 4. **Run Instructions:** [`README.md`](README.md) — Setup and execution instructions.
 5. **Configuration:** [`configs/config.yaml`](configs/config.yaml) — Project paths, channel metadata, resampling rule, and gap-filling parameters.
@@ -254,10 +253,7 @@ cleaning output.
 ### Run Commands
 
 ```powershell
-# Run the automated cleaning pipeline
-.\.venv\Scripts\python.exe src/clean_raw_data.py
-
-# Launch the interactive walkthrough notebook
+# Launch the self-contained cleaning walkthrough notebook
 .\.venv\Scripts\python.exe -m jupyter notebook notebooks/01_data_cleaning.ipynb
 ```
 
